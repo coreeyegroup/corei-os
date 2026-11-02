@@ -1,0 +1,27 @@
+{
+  "event_id": "evt_e5d3ab4531d3a10427a2f9a16de48438",
+  "event_type": "order.lifecycle",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "acc_paper_a",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000061000000000,
+  "recorded_at_ns": 1788000061000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.1.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "9808800e0909658a88dfb8e5c58715b79bcff8fbfcf96abfa36b9229f37ceb78",
+  "payload": {
+    "order_id": "ord_001",
+    "account_id": "acc_paper_a",
+    "command_id": "cmd_b2cdd39e134bbd194fc1cc8c5972b9d0",
+    "sequence": 5,
+    "event_type": "BROKER_ACK",
+    "from_status": "PENDING_SUBMISSION",
+    "to_status": "ACKNOWLEDGED",
+    "broker_order_id": "PB-0001",
+    "reason": null,
+    "at_ns": 1788000061000000000
+  }
+}

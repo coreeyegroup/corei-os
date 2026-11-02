@@ -1,0 +1,96 @@
+{
+  "$defs": {
+    "Decision": {
+      "enum": [
+        "APPROVED",
+        "REJECTED"
+      ],
+      "title": "Decision",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/risk.decision.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "account_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Account Id",
+      "type": "string"
+    },
+    "as_of_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "As Of Ns",
+      "type": "integer"
+    },
+    "decision": {
+      "$ref": "#/$defs/Decision"
+    },
+    "intent_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Intent Id",
+      "type": "string"
+    },
+    "max_quantity_units": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000000000000000000000000000,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Max Quantity Units"
+    },
+    "portfolio_state_version": {
+      "minimum": 0,
+      "title": "Portfolio State Version",
+      "type": "integer"
+    },
+    "reason_codes": {
+      "default": [],
+      "items": {
+        "maxLength": 128,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+        "type": "string"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "risk_config_version": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Risk Config Version",
+      "type": "string"
+    },
+    "risk_decision_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Risk Decision Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "risk_decision_id",
+    "intent_id",
+    "account_id",
+    "decision",
+    "portfolio_state_version",
+    "risk_config_version",
+    "as_of_ns"
+  ],
+  "title": "RiskDecision",
+  "type": "object",
+  "x-corei-event-type": "risk.decision",
+  "x-corei-schema-version": 1
+}

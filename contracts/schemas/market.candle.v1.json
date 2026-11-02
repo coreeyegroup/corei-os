@@ -1,0 +1,122 @@
+{
+  "$id": "https://corei.local/schemas/market.candle.v1.json",
+  "additionalProperties": false,
+  "description": "A time bar over the half-open interval [start_ns, end_ns) (F15).",
+  "properties": {
+    "close_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Close Units",
+      "type": "integer"
+    },
+    "complete": {
+      "title": "Complete",
+      "type": "boolean"
+    },
+    "dataset_version": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Dataset Version",
+      "type": "string"
+    },
+    "end_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "End Ns",
+      "type": "integer"
+    },
+    "high_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "High Units",
+      "type": "integer"
+    },
+    "instrument_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "low_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Low Units",
+      "type": "integer"
+    },
+    "observation_count": {
+      "title": "Observation Count",
+      "type": "integer"
+    },
+    "open_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Open Units",
+      "type": "integer"
+    },
+    "price_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Price Scale",
+      "type": "integer"
+    },
+    "price_source": {
+      "enum": [
+        "TRADE",
+        "MID",
+        "BID",
+        "ASK",
+        "INDEX"
+      ],
+      "title": "Price Source",
+      "type": "string"
+    },
+    "start_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Start Ns",
+      "type": "integer"
+    },
+    "timeframe": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Timeframe",
+      "type": "string"
+    },
+    "traded_volume_units": {
+      "anyOf": [
+        {
+          "maximum": 1000000000000000000000000000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Traded Volume Units"
+    }
+  },
+  "required": [
+    "instrument_id",
+    "timeframe",
+    "start_ns",
+    "end_ns",
+    "price_source",
+    "price_scale",
+    "open_units",
+    "high_units",
+    "low_units",
+    "close_units",
+    "observation_count",
+    "complete",
+    "dataset_version"
+  ],
+  "title": "Candle",
+  "type": "object",
+  "x-corei-event-type": "market.candle",
+  "x-corei-schema-version": 1
+}

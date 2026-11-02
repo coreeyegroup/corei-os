@@ -1,0 +1,230 @@
+{
+  "$defs": {
+    "InstrumentKind": {
+      "enum": [
+        "INDEX",
+        "EQUITY",
+        "FUTURE",
+        "OPTION",
+        "FX_SPOT",
+        "CFD",
+        "COMMODITY"
+      ],
+      "title": "InstrumentKind",
+      "type": "string"
+    },
+    "OptionRight": {
+      "enum": [
+        "CALL",
+        "PUT"
+      ],
+      "title": "OptionRight",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/reference.instrument.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "contract_multiplier_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Contract Multiplier Units",
+      "type": "integer"
+    },
+    "currency_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Currency Scale",
+      "type": "integer"
+    },
+    "expiry_ns": {
+      "anyOf": [
+        {
+          "exclusiveMaximum": 100000000000000000000,
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Expiry Ns"
+    },
+    "instrument_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/InstrumentKind"
+    },
+    "max_quantity_units": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000000000000000000000000000,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Max Quantity Units"
+    },
+    "min_quantity_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Min Quantity Units",
+      "type": "integer"
+    },
+    "multiplier_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Multiplier Scale",
+      "type": "integer"
+    },
+    "option_right": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OptionRight"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "price_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Price Scale",
+      "type": "integer"
+    },
+    "provider_keys": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "title": "Provider Keys",
+      "type": "object"
+    },
+    "quantity_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Quantity Scale",
+      "type": "integer"
+    },
+    "quantity_step_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Quantity Step Units",
+      "type": "integer"
+    },
+    "settlement_currency": {
+      "pattern": "^[A-Z]{3}$",
+      "title": "Settlement Currency",
+      "type": "string"
+    },
+    "strike_units": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000000000000000000000000000,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Strike Units"
+    },
+    "symbol": {
+      "title": "Symbol",
+      "type": "string"
+    },
+    "tick_size_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Tick Size Units",
+      "type": "integer"
+    },
+    "tradable": {
+      "title": "Tradable",
+      "type": "boolean"
+    },
+    "underlying_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Underlying Id"
+    },
+    "valid_from_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Valid From Ns",
+      "type": "integer"
+    },
+    "valid_to_ns": {
+      "anyOf": [
+        {
+          "exclusiveMaximum": 100000000000000000000,
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Valid To Ns"
+    },
+    "venue": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Venue",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 0,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "instrument_id",
+    "version",
+    "venue",
+    "symbol",
+    "kind",
+    "tradable",
+    "price_scale",
+    "tick_size_units",
+    "quantity_scale",
+    "quantity_step_units",
+    "min_quantity_units",
+    "contract_multiplier_units",
+    "multiplier_scale",
+    "settlement_currency",
+    "currency_scale",
+    "valid_from_ns"
+  ],
+  "title": "InstrumentSpec",
+  "type": "object",
+  "x-corei-event-type": "reference.instrument",
+  "x-corei-schema-version": 1
+}

@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "ExecutionMode": {
+      "enum": [
+        "OFF",
+        "SIMULATION",
+        "PAPER",
+        "LIVE_SEMI",
+        "LIVE_AUTO"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/control.state.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "halt_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Halt Reason"
+    },
+    "halted": {
+      "title": "Halted",
+      "type": "boolean"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "scope": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Scope",
+      "type": "string"
+    },
+    "updated_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Updated At Ns",
+      "type": "integer"
+    },
+    "updated_by": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Updated By",
+      "type": "string"
+    },
+    "version": {
+      "minimum": 0,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "scope",
+    "version",
+    "mode",
+    "halted",
+    "updated_at_ns",
+    "updated_by"
+  ],
+  "title": "ControlStateContract",
+  "type": "object",
+  "x-corei-event-type": "control.state",
+  "x-corei-schema-version": 1
+}

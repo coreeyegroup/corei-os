@@ -1,0 +1,33 @@
+{
+  "event_id": "evt_09ff366d8bd79737996b61a1b2427f5d",
+  "event_type": "market.quote",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "ins_test_fut_a",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000000000000000,
+  "recorded_at_ns": 1788000000000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.1.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "79a99a199800ebfacc6f375125e2af5f110addd238b9f0d0c40d0f56428233f0",
+  "payload": {
+    "observation_id": "obs_q_001",
+    "provider": "upstox",
+    "feed_session_id": "fs_001",
+    "instrument_id": "ins_test_fut_a",
+    "origin": "OBSERVED",
+    "provider_ts_ns": 1788000000000000000,
+    "receive_ts_ns": 1788000000002000000,
+    "provider_sequence": 101,
+    "price_scale": 2,
+    "raw_evidence_hash": "f99466a7c7d43a06de087a1f54f77e1b9145a37e5f0ab9e59bddeeda23bb2b91",
+    "kind": "QUOTE",
+    "bid_units": 2350010,
+    "bid_size_units": 75,
+    "ask_units": 2350030,
+    "ask_size_units": 50,
+    "size_scale": 0
+  }
+}

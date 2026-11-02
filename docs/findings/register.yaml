@@ -1,0 +1,358 @@
+# Findings F01–F50 from the legacy assessment (commit a08758dc3) mapped to the rebuild.
+#
+# status:
+#   covered  - fully addressed by Delivery A; tests listed must exist and pass
+#   partial  - Delivery A adds a contract/domain guard (tests listed); runtime work pending at `delivery`
+#   pending  - nothing yet; an acceptance placeholder is reported as xfail until implemented
+#   process  - needs a human/operational action outside this repo (tests guard regressions only)
+# delivery: A..I from COREI_PLAN_RECONCILIATION.md section 4.  gate: R0..R13.
+# Enforced by tests/acceptance/test_findings_register.py.
+
+- id: F01
+  severity: critical
+  title: Sensitive material committed to public source
+  gate: R0
+  delivery: A
+  status: process
+  action: Revoke ArgoCD deploy key, reissue Kafka CA/broker certs, revoke Vault root token and rekey; purge history
+  tests: [tests/acceptance/test_repo_hygiene.py::test_no_secret_material_tracked]
+- id: F02
+  severity: critical
+  title: No connected execution service runtime
+  gate: R9
+  delivery: D
+  status: pending
+- id: F03
+  severity: critical
+  title: Account and origin boundaries disappear
+  gate: R8
+  delivery: D
+  status: partial
+  tests: [tests/contract/test_vectors.py::test_two_accounts_from_one_intent_get_distinct_command_ids_f03]
+- id: F04
+  severity: critical
+  title: Risk uses simulated state
+  gate: R5
+  delivery: B
+  status: partial
+  tests: ["tests/contract/test_vectors.py::test_invalid_vector_is_refused[risk_reject_without_reason]"]
+- id: F05
+  severity: critical
+  title: Kill switch acknowledges without enforcing
+  gate: R10
+  delivery: B
+  status: partial
+  tests:
+    - tests/unit/test_control_and_recon.py::test_fail_closed_when_control_state_missing_c08
+    - tests/unit/test_control_and_recon.py::test_halt_blocks_new_risk_but_allows_reducing_orders_c03
+    - tests/unit/test_control_and_recon.py::test_fence_detects_halt_between_reservation_and_dispatch
+- id: F06
+  severity: critical
+  title: Broker dispatch route bypasses reviewed controls
+  gate: R8
+  delivery: D
+  status: partial
+  tests: ["tests/contract/test_vectors.py::test_invalid_vector_is_refused[command_mode_off]"]
+- id: F07
+  severity: high
+  title: Provider registry shares account session objects
+  gate: R3
+  delivery: F
+  status: pending
+- id: F08
+  severity: high
+  title: Credential API calls nonexistent methods
+  gate: R2
+  delivery: F
+  status: pending
+- id: F09
+  severity: high
+  title: Multi-instrument Upstox messages lose observations
+  gate: R3
+  delivery: C
+  status: pending
+- id: F10
+  severity: high
+  title: Quote-only model excludes legitimate observations
+  gate: R3
+  delivery: C
+  status: partial
+  tests: ["tests/contract/test_vectors.py::test_invalid_vector_is_refused[quote_without_sides]"]
+- id: F11
+  severity: high
+  title: Ingestion lifecycle and memory control incomplete
+  gate: R3
+  delivery: C
+  status: pending
+- id: F12
+  severity: high
+  title: Kafka order is not instrument scoped
+  gate: R2
+  delivery: B
+  status: partial
+  tests: ["tests/contract/test_vectors.py::test_invalid_vector_is_refused[envelope_wrong_partition_key]"]
+- id: F13
+  severity: high
+  title: Mixed instruments contaminate features
+  gate: R6
+  delivery: C
+  status: pending
+- id: F14
+  severity: high
+  title: Feature definitions are not stable research contracts
+  gate: R6
+  delivery: C
+  status: partial
+  tests:
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[feature_future_leakage]"
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[feature_value_while_warming]"
+- id: F15
+  severity: high
+  title: OHLCV endpoint does not generate candles
+  gate: R4
+  delivery: C
+  status: partial
+  tests: ["tests/contract/test_vectors.py::test_invalid_vector_is_refused[candle_inverted_interval]"]
+- id: F16
+  severity: high
+  title: Deterministic domain logic reads wall clock
+  gate: R1
+  delivery: A
+  status: covered
+  tests:
+    - tests/unit/test_domain_purity.py::test_domain_is_pure
+    - tests/unit/test_identity_and_time.py::test_derived_id_shape_and_determinism
+- id: F17
+  severity: high
+  title: Incompatible trade-intent contracts
+  gate: R1
+  delivery: A
+  status: covered
+  tests:
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[intent_long_short_side]"
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[intent_unknown_field]"
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[intent_side_lowercase]"
+- id: F18
+  severity: high
+  title: Sizing uses fixed values and unsafe minimum clamp
+  gate: R8
+  delivery: D
+  status: partial
+  tests: [tests/unit/test_units.py::test_quantity_is_floored_never_raised_to_minimum_f18]
+- id: F19
+  severity: high
+  title: Incomplete order identity and order payload
+  gate: R1
+  delivery: A
+  status: covered
+  tests:
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[command_without_account]"
+    - tests/unit/test_identity_and_time.py::test_derived_id_shape_and_determinism
+    - tests/unit/test_identity_and_time.py::test_concatenation_collisions_of_legacy_lineage_are_impossible
+- id: F20
+  severity: high
+  title: OMS lifecycle resets on restart
+  gate: R9
+  delivery: D
+  status: partial
+  tests:
+    - tests/unit/test_orders.py::test_cannot_skip_risk_policy_or_reservation
+    - tests/unit/test_orders.py::test_terminal_states_reject_new_lifecycle_events
+- id: F21
+  severity: high
+  title: Fill propagation is an acknowledgement object
+  gate: R5
+  delivery: D
+  status: partial
+  tests:
+    - tests/unit/test_orders.py::test_duplicate_fill_applies_once_f21_f22
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[fill_without_execution_id]"
+- id: F22
+  severity: high
+  title: Portfolio engine cannot own institutional state
+  gate: R5
+  delivery: B
+  status: pending
+- id: F23
+  severity: high
+  title: Reconciliation has false match and false break paths
+  gate: R9
+  delivery: D
+  status: partial
+  tests:
+    - tests/unit/test_control_and_recon.py::test_empty_reconciliation_is_unknown_not_matched_f23
+    - tests/unit/test_control_and_recon.py::test_break_lifecycle_and_halt_retention
+- id: F24
+  severity: high
+  title: Replay tests do not establish execution parity
+  gate: R11
+  delivery: E
+  status: pending
+- id: F25
+  severity: high
+  title: Certification can pass disconnected systems
+  gate: R1
+  delivery: A
+  status: process
+  action: Gates pass only via CI runs of executable tests against a pinned commit; legacy stage reports are history only
+  tests: [tests/acceptance/test_findings_register.py::test_register_is_complete_and_consistent]
+- id: F26
+  severity: high
+  title: Apparent intelligence is synthesized from assertions
+  gate: R6
+  delivery: E
+  status: partial
+  tests: [tests/contract/test_market_state.py::test_unknown_or_simulated_state_is_never_tradable]
+- id: F27
+  severity: high
+  title: UI serves mock trading state under operational routes
+  gate: R10
+  delivery: G
+  status: pending
+- id: F28
+  severity: high
+  title: UI operations exceed backend implementation
+  gate: R10
+  delivery: G
+  status: pending
+- id: F29
+  severity: high
+  title: Kubernetes overview does not await data
+  gate: R10
+  delivery: G
+  status: pending
+- id: F30
+  severity: high
+  title: Development file API has weak containment
+  gate: R10
+  delivery: G
+  status: pending
+- id: F31
+  severity: high
+  title: Public-source deployment cycle (Argo root self-reference)
+  gate: R11
+  delivery: G
+  status: pending
+- id: F32
+  severity: high
+  title: GitOps child source paths absent
+  gate: R11
+  delivery: G
+  status: pending
+- id: F33
+  severity: high
+  title: CI and deployment definitions are placeholders
+  gate: R1
+  delivery: A
+  status: covered
+  tests: [tests/acceptance/test_repo_hygiene.py::test_ci_workflow_is_real]
+- id: F34
+  severity: high
+  title: Local-only image assumptions prevent reconstruction
+  gate: R11
+  delivery: G
+  status: pending
+- id: F35
+  severity: high
+  title: Competing database definitions
+  gate: R2
+  delivery: B
+  status: pending
+- id: F36
+  severity: high
+  title: Health endpoints establish process life only
+  gate: R2
+  delivery: B
+  status: pending
+- id: F37
+  severity: medium
+  title: Ambiguous source and dependency layout
+  gate: R1
+  delivery: A
+  status: covered
+  tests: [tests/acceptance/test_repo_hygiene.py::test_no_vendored_or_runtime_artifacts_tracked]
+- id: F38
+  severity: medium
+  title: Lifecycle polling and WebSocket URL contracts drift
+  gate: R10
+  delivery: G
+  status: pending
+- id: F39
+  severity: high
+  title: No complete inspected CEIL enforcement path
+  gate: R7
+  delivery: D
+  status: partial
+  tests: [tests/contract/test_market_state.py::test_external_intent_keeps_origin_and_partition]
+- id: F40
+  severity: high
+  title: Copy trading is a parallel execution shortcut
+  gate: R13
+  delivery: I
+  status: pending
+- id: F41
+  severity: high
+  title: Published market payload does not satisfy declared schema
+  gate: R1
+  delivery: A
+  status: covered
+  tests:
+    - tests/contract/test_vectors.py::test_every_event_type_has_a_valid_vector
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[quote_integral_float_price]"
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[envelope_tampered_payload]"
+- id: F42
+  severity: high
+  title: Synthetic and observed data share the same persistence ingress
+  gate: R3
+  delivery: C
+  status: partial
+  tests: [tests/contract/test_market_state.py::test_simulated_observation_is_labelled]
+- id: F43
+  severity: high
+  title: Tick migration cannot satisfy the persistence query
+  gate: R2
+  delivery: B
+  status: pending
+- id: F44
+  severity: high
+  title: Event clients name different Kafka namespaces
+  gate: R2
+  delivery: B
+  status: pending
+- id: F45
+  severity: high
+  title: Stage-14 topic setup reports registration without creating topics
+  gate: R2
+  delivery: B
+  status: pending
+- id: F46
+  severity: high
+  title: Planned strategy plugins are empty
+  gate: R7
+  delivery: D
+  status: pending
+- id: F47
+  severity: high
+  title: Default mock broker does not implement its orchestration contract
+  gate: R9
+  delivery: D
+  status: pending
+- id: F48
+  severity: high
+  title: MT5 stream startup is not a supervised singleton
+  gate: R13
+  delivery: I
+  status: pending
+- id: F49
+  severity: high
+  title: SOR fails without a valid route when failover is disabled
+  gate: R9
+  delivery: D
+  status: pending
+- id: F50
+  severity: high
+  title: Follower sizing lacks exact financial units and input bounds
+  gate: R13
+  delivery: I
+  status: partial
+  tests: [tests/unit/test_units.py::test_binary_float_is_rejected]

@@ -1,0 +1,136 @@
+{
+  "$defs": {
+    "Origin": {
+      "enum": [
+        "CORE",
+        "EXTERNAL"
+      ],
+      "title": "Origin",
+      "type": "string"
+    },
+    "Purpose": {
+      "enum": [
+        "OPEN",
+        "REDUCE",
+        "CLOSE"
+      ],
+      "title": "Purpose",
+      "type": "string"
+    },
+    "Side": {
+      "enum": [
+        "BUY",
+        "SELL"
+      ],
+      "title": "Side",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/trade.intent.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "allowed_accounts": {
+      "items": {
+        "maxLength": 128,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Allowed Accounts",
+      "type": "array"
+    },
+    "as_of_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "As Of Ns",
+      "type": "integer"
+    },
+    "capital_partition": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Capital Partition",
+      "type": "string"
+    },
+    "expires_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Expires At Ns",
+      "type": "integer"
+    },
+    "instrument_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "intent_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Intent Id",
+      "type": "string"
+    },
+    "origin": {
+      "$ref": "#/$defs/Origin"
+    },
+    "purpose": {
+      "$ref": "#/$defs/Purpose"
+    },
+    "side": {
+      "$ref": "#/$defs/Side"
+    },
+    "signal_ids": {
+      "default": [],
+      "items": {
+        "maxLength": 128,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+        "type": "string"
+      },
+      "title": "Signal Ids",
+      "type": "array"
+    },
+    "source_ref": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Source Ref",
+      "type": "string"
+    },
+    "strategy_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Strategy Id",
+      "type": "string"
+    },
+    "strategy_version": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Strategy Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "intent_id",
+    "origin",
+    "source_ref",
+    "capital_partition",
+    "instrument_id",
+    "side",
+    "purpose",
+    "strategy_id",
+    "strategy_version",
+    "allowed_accounts",
+    "as_of_ns",
+    "expires_at_ns"
+  ],
+  "title": "TradeIntent",
+  "type": "object",
+  "x-corei-event-type": "trade.intent",
+  "x-corei-schema-version": 1
+}

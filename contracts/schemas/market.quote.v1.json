@@ -1,0 +1,175 @@
+{
+  "$defs": {
+    "DataOrigin": {
+      "description": "Where data came from. Simulated data never enters observed datasets (F42).",
+      "enum": [
+        "OBSERVED",
+        "REPLAYED",
+        "SIMULATED"
+      ],
+      "title": "DataOrigin",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/market.quote.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "ask_size_units": {
+      "anyOf": [
+        {
+          "maximum": 1000000000000000000000000000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ask Size Units"
+    },
+    "ask_units": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000000000000000000000000000,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ask Units"
+    },
+    "bid_size_units": {
+      "anyOf": [
+        {
+          "maximum": 1000000000000000000000000000000,
+          "minimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bid Size Units"
+    },
+    "bid_units": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000000000000000000000000000,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bid Units"
+    },
+    "feed_session_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Feed Session Id",
+      "type": "string"
+    },
+    "instrument_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "kind": {
+      "const": "QUOTE",
+      "default": "QUOTE",
+      "title": "Kind",
+      "type": "string"
+    },
+    "observation_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Observation Id",
+      "type": "string"
+    },
+    "origin": {
+      "$ref": "#/$defs/DataOrigin"
+    },
+    "price_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Price Scale",
+      "type": "integer"
+    },
+    "provider": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Provider",
+      "type": "string"
+    },
+    "provider_sequence": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Provider Sequence"
+    },
+    "provider_ts_ns": {
+      "anyOf": [
+        {
+          "exclusiveMaximum": 100000000000000000000,
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Provider Ts Ns"
+    },
+    "raw_evidence_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Raw Evidence Hash",
+      "type": "string"
+    },
+    "receive_ts_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Receive Ts Ns",
+      "type": "integer"
+    },
+    "size_scale": {
+      "default": 0,
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Size Scale",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "observation_id",
+    "provider",
+    "feed_session_id",
+    "instrument_id",
+    "origin",
+    "provider_ts_ns",
+    "receive_ts_ns",
+    "price_scale",
+    "raw_evidence_hash"
+  ],
+  "title": "QuoteObservation",
+  "type": "object",
+  "x-corei-event-type": "market.quote",
+  "x-corei-schema-version": 1
+}

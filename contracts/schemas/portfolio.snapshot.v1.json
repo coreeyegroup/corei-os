@@ -1,0 +1,203 @@
+{
+  "$defs": {
+    "MoneyAmount": {
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "scale": {
+          "maximum": 18,
+          "minimum": 0,
+          "title": "Scale",
+          "type": "integer"
+        },
+        "units": {
+          "maximum": 1000000000000000000000000000000,
+          "minimum": -1000000000000000000000000000000,
+          "title": "Units",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "units",
+        "currency",
+        "scale"
+      ],
+      "title": "MoneyAmount",
+      "type": "object"
+    },
+    "Position": {
+      "additionalProperties": false,
+      "properties": {
+        "average_price_units": {
+          "maximum": 1000000000000000000000000000000,
+          "minimum": 0,
+          "title": "Average Price Units",
+          "type": "integer"
+        },
+        "instrument_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Instrument Id",
+          "type": "string"
+        },
+        "price_scale": {
+          "maximum": 18,
+          "minimum": 0,
+          "title": "Price Scale",
+          "type": "integer"
+        },
+        "quantity_scale": {
+          "maximum": 18,
+          "minimum": 0,
+          "title": "Quantity Scale",
+          "type": "integer"
+        },
+        "quantity_units": {
+          "maximum": 1000000000000000000000000000000,
+          "minimum": -1000000000000000000000000000000,
+          "title": "Quantity Units",
+          "type": "integer"
+        },
+        "realized_pnl": {
+          "$ref": "#/$defs/MoneyAmount"
+        }
+      },
+      "required": [
+        "instrument_id",
+        "quantity_units",
+        "quantity_scale",
+        "average_price_units",
+        "price_scale",
+        "realized_pnl"
+      ],
+      "title": "Position",
+      "type": "object"
+    },
+    "Reservation": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "$ref": "#/$defs/MoneyAmount"
+        },
+        "command_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Command Id",
+          "type": "string"
+        },
+        "expires_at_ns": {
+          "exclusiveMaximum": 100000000000000000000,
+          "exclusiveMinimum": 0,
+          "title": "Expires At Ns",
+          "type": "integer"
+        },
+        "reservation_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Reservation Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reservation_id",
+        "command_id",
+        "amount",
+        "expires_at_ns"
+      ],
+      "title": "Reservation",
+      "type": "object"
+    }
+  },
+  "$id": "https://corei.local/schemas/portfolio.snapshot.v1.json",
+  "additionalProperties": false,
+  "description": "Ledger projection for one account at a version (F22).",
+  "properties": {
+    "account_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Account Id",
+      "type": "string"
+    },
+    "as_of_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "As Of Ns",
+      "type": "integer"
+    },
+    "cash": {
+      "items": {
+        "$ref": "#/$defs/MoneyAmount"
+      },
+      "title": "Cash",
+      "type": "array"
+    },
+    "ledger_cutoff_sequence": {
+      "minimum": 0,
+      "title": "Ledger Cutoff Sequence",
+      "type": "integer"
+    },
+    "mark_source": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Mark Source"
+    },
+    "portfolio_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Portfolio Id",
+      "type": "string"
+    },
+    "positions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Position"
+      },
+      "title": "Positions",
+      "type": "array"
+    },
+    "reservations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Reservation"
+      },
+      "title": "Reservations",
+      "type": "array"
+    },
+    "state_version": {
+      "minimum": 0,
+      "title": "State Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "account_id",
+    "portfolio_id",
+    "state_version",
+    "ledger_cutoff_sequence",
+    "as_of_ns",
+    "cash"
+  ],
+  "title": "PortfolioSnapshot",
+  "type": "object",
+  "x-corei-event-type": "portfolio.snapshot",
+  "x-corei-schema-version": 1
+}

@@ -1,0 +1,27 @@
+{
+  "event_id": "evt_2952ab1cde517e09c061ececd29e869e",
+  "event_type": "market.state",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "ins_test_fut_a",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000060000000000,
+  "recorded_at_ns": 1788000060000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.1.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "d717863baae5ea4c102d1a72f4ac67900ca0a2422633f7520679b9f77b5f9a97",
+  "payload": {
+    "instrument_id": "ins_test_fut_a",
+    "as_of_ns": 1788000060000000000,
+    "watermark_ns": 1788000060000000000,
+    "last_observation_ns": 1788000059000000000,
+    "freshness": "FRESH",
+    "session_status": "OPEN",
+    "open_gaps": 0,
+    "source": "MEASURED",
+    "feed_session_id": "fs_001",
+    "expires_at_ns": 1788000065000000000
+  }
+}

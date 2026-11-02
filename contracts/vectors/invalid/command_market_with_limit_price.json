@@ -1,0 +1,44 @@
+{
+  "event_type": "order.command",
+  "expect_error": "MARKET orders must not",
+  "finding": "F19",
+  "payload": {
+    "account_id": "acc_paper_a",
+    "as_of_ns": 1788000060000000000,
+    "capital_partition": "core",
+    "client_order_id": "cli_5e7c6f4d6dc543d55e07fd5f176646a0",
+    "command_id": "cmd_b2cdd39e134bbd194fc1cc8c5972b9d0",
+    "config_version": "cfg_v1",
+    "control_fence": [
+      [
+        "GLOBAL",
+        3
+      ],
+      [
+        "ACCOUNT:acc_paper_a",
+        5
+      ]
+    ],
+    "expires_at_ns": 1788000120000000000,
+    "instrument_id": "ins_test_fut_a",
+    "instrument_version": 1,
+    "intent_id": "int_001",
+    "limit_price_units": 2350500,
+    "mode": "PAPER",
+    "order_type": "MARKET",
+    "origin": "CORE",
+    "policy_decision_id": "pol_001",
+    "portfolio_id": "pf_paper_a",
+    "portfolio_state_version": 7,
+    "price_scale": 2,
+    "purpose": "OPEN",
+    "quantity_scale": 0,
+    "quantity_units": 50,
+    "reservation_id": "rsv_001",
+    "risk_decision_id": "rsk_001",
+    "side": "BUY",
+    "strategy_id": "ema_cross",
+    "strategy_version": "1.0.0",
+    "time_in_force": "DAY"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "$id": "https://corei.local/schemas/market.quarantine.v1.json",
+  "additionalProperties": false,
+  "description": "An observation rejected by admissibility policy \u2014 kept, counted, never dropped silently.",
+  "properties": {
+    "instrument_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Instrument Id"
+    },
+    "observation_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Observation Id",
+      "type": "string"
+    },
+    "provider": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Provider",
+      "type": "string"
+    },
+    "raw_evidence_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Raw Evidence Hash",
+      "type": "string"
+    },
+    "reason_code": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Reason Code",
+      "type": "string"
+    },
+    "receive_ts_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Receive Ts Ns",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "observation_id",
+    "instrument_id",
+    "provider",
+    "receive_ts_ns",
+    "reason_code",
+    "raw_evidence_hash"
+  ],
+  "title": "QuarantineRecord",
+  "type": "object",
+  "x-corei-event-type": "market.quarantine",
+  "x-corei-schema-version": 1
+}

@@ -1,0 +1,19 @@
+{
+  "event_type": "market.quote",
+  "expect_error": "at least one side",
+  "finding": "F10",
+  "payload": {
+    "feed_session_id": "fs_001",
+    "instrument_id": "ins_test_fut_a",
+    "kind": "QUOTE",
+    "observation_id": "obs_q_001",
+    "origin": "OBSERVED",
+    "price_scale": 2,
+    "provider": "upstox",
+    "provider_sequence": 101,
+    "provider_ts_ns": 1788000000000000000,
+    "raw_evidence_hash": "f99466a7c7d43a06de087a1f54f77e1b9145a37e5f0ab9e59bddeeda23bb2b91",
+    "receive_ts_ns": 1788000000002000000,
+    "size_scale": 0
+  }
+}

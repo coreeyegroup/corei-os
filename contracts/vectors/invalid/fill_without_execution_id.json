@@ -1,0 +1,28 @@
+{
+  "event_type": "order.fill",
+  "expect_error": "broker_execution_id",
+  "finding": "F21",
+  "payload": {
+    "account_id": "acc_paper_a",
+    "broker": "paper",
+    "broker_order_id": "PB-0001",
+    "executed_at_ns": 1788000062000000000,
+    "fees": [
+      {
+        "currency": "INR",
+        "scale": 2,
+        "units": 2000
+      }
+    ],
+    "fill_id": "fil_664d3cde9a3070ccfa41dfac00a89910",
+    "instrument_id": "ins_test_fut_a",
+    "mode": "PAPER",
+    "order_id": "ord_001",
+    "price_scale": 2,
+    "price_units": 2350500,
+    "quantity_scale": 0,
+    "quantity_units": 25,
+    "received_at_ns": 1788000062005000000,
+    "side": "BUY"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "event_type": "market.candle",
+  "expect_error": "end_ns",
+  "finding": "F15",
+  "payload": {
+    "close_units": 2350500,
+    "complete": true,
+    "dataset_version": "ds_obs_v1",
+    "end_ns": 1787999999999999999,
+    "high_units": 2351000,
+    "instrument_id": "ins_test_fut_a",
+    "low_units": 2349000,
+    "observation_count": 48,
+    "open_units": 2350020,
+    "price_scale": 2,
+    "price_source": "TRADE",
+    "start_ns": 1788000000000000000,
+    "timeframe": "1m",
+    "traded_volume_units": 1200
+  }
+}

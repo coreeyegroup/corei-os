@@ -1,0 +1,130 @@
+{
+  "$defs": {
+    "OrderEventType": {
+      "enum": [
+        "RISK_APPROVE",
+        "POLICY_APPROVE",
+        "RESERVE",
+        "SUBMIT",
+        "SUBMIT_TIMEOUT",
+        "BROKER_ACK",
+        "BROKER_REJECT",
+        "UNKNOWN_RESOLVED_FOUND",
+        "UNKNOWN_RESOLVED_ABSENT",
+        "FILL",
+        "CANCEL_REQUEST",
+        "CANCEL_ACK",
+        "CANCEL_REJECT",
+        "EXPIRE",
+        "REJECT"
+      ],
+      "title": "OrderEventType",
+      "type": "string"
+    },
+    "OrderStatus": {
+      "enum": [
+        "PROPOSED",
+        "RISK_APPROVED",
+        "POLICY_APPROVED",
+        "RESERVED",
+        "PENDING_SUBMISSION",
+        "SUBMISSION_UNKNOWN",
+        "ACKNOWLEDGED",
+        "PARTIALLY_FILLED",
+        "CANCEL_REQUESTED",
+        "FILLED",
+        "CANCELLED",
+        "EXPIRED",
+        "REJECTED"
+      ],
+      "title": "OrderStatus",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/order.lifecycle.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "account_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Account Id",
+      "type": "string"
+    },
+    "at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "At Ns",
+      "type": "integer"
+    },
+    "broker_order_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Broker Order Id"
+    },
+    "command_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Command Id",
+      "type": "string"
+    },
+    "event_type": {
+      "$ref": "#/$defs/OrderEventType"
+    },
+    "from_status": {
+      "$ref": "#/$defs/OrderStatus"
+    },
+    "order_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Order Id",
+      "type": "string"
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "sequence": {
+      "minimum": 1,
+      "title": "Sequence",
+      "type": "integer"
+    },
+    "to_status": {
+      "$ref": "#/$defs/OrderStatus"
+    }
+  },
+  "required": [
+    "order_id",
+    "account_id",
+    "command_id",
+    "sequence",
+    "event_type",
+    "from_status",
+    "to_status",
+    "at_ns"
+  ],
+  "title": "OrderLifecycleEvent",
+  "type": "object",
+  "x-corei-event-type": "order.lifecycle",
+  "x-corei-schema-version": 1
+}

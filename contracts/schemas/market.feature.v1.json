@@ -1,0 +1,93 @@
+{
+  "$id": "https://corei.local/schemas/market.feature.v1.json",
+  "additionalProperties": false,
+  "description": "A versioned feature for one instrument and timeframe (F13, F14).",
+  "properties": {
+    "as_of_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "As Of Ns",
+      "type": "integer"
+    },
+    "dataset_version": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Dataset Version",
+      "type": "string"
+    },
+    "feature_name": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Feature Name",
+      "type": "string"
+    },
+    "feature_version": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Feature Version",
+      "type": "string"
+    },
+    "inputs_cutoff_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Inputs Cutoff Ns",
+      "type": "integer"
+    },
+    "instrument_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "timeframe": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Timeframe",
+      "type": "string"
+    },
+    "value_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Value Scale",
+      "type": "integer"
+    },
+    "value_units": {
+      "anyOf": [
+        {
+          "maximum": 1000000000000000000000000000000,
+          "minimum": -1000000000000000000000000000000,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Value Units"
+    },
+    "warm": {
+      "title": "Warm",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "instrument_id",
+    "timeframe",
+    "feature_name",
+    "feature_version",
+    "as_of_ns",
+    "inputs_cutoff_ns",
+    "value_units",
+    "value_scale",
+    "warm",
+    "dataset_version"
+  ],
+  "title": "FeatureValue",
+  "type": "object",
+  "x-corei-event-type": "market.feature",
+  "x-corei-schema-version": 1
+}

@@ -1,0 +1,25 @@
+{
+  "event_type": "trade.intent",
+  "expect_error": "side",
+  "finding": "F17",
+  "payload": {
+    "allowed_accounts": [
+      "acc_paper_a",
+      "acc_paper_b"
+    ],
+    "as_of_ns": 1788000060000000000,
+    "capital_partition": "core",
+    "expires_at_ns": 1788000120000000000,
+    "instrument_id": "ins_test_fut_a",
+    "intent_id": "int_001",
+    "origin": "CORE",
+    "purpose": "OPEN",
+    "side": "buy",
+    "signal_ids": [
+      "sig_001"
+    ],
+    "source_ref": "ema_cross",
+    "strategy_id": "ema_cross",
+    "strategy_version": "1.0.0"
+  }
+}

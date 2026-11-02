@@ -1,0 +1,13 @@
+{
+  "event_type": "control.state",
+  "expect_error": "needs a reason",
+  "finding": "F05",
+  "payload": {
+    "halted": true,
+    "mode": "PAPER",
+    "scope": "ACCOUNT:acc_paper_a",
+    "updated_at_ns": 1788000070000000000,
+    "updated_by": "reconciler",
+    "version": 6
+  }
+}

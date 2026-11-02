@@ -1,0 +1,48 @@
+# --- Never commit: these are what bloated the legacy repo to 246k files (F37) ---
+node_modules/
+.venv/
+venv/
+**/site-packages/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+dist/
+build/
+*.egg-info/
+
+# Runtime output, event stores, logs (legacy runtime/stage-14 held 124k generated files)
+runtime/
+var/
+*.log
+*.jsonl
+
+# Archives, backups and editor copies (legacy had *.bak, *.pre-*, *.tar next to source)
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.bak
+*.bak-*
+*.pre-*
+*.orig
+*~
+
+# Secrets (F01). Real secrets live in a secret manager, never in Git.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.jks
+secrets/
+**/vault/init*.json
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

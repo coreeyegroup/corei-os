@@ -1,0 +1,121 @@
+{
+  "$defs": {
+    "Direction": {
+      "enum": [
+        "LONG",
+        "SHORT",
+        "FLAT"
+      ],
+      "title": "Direction",
+      "type": "string"
+    },
+    "FeatureRef": {
+      "additionalProperties": false,
+      "properties": {
+        "as_of_ns": {
+          "exclusiveMaximum": 100000000000000000000,
+          "exclusiveMinimum": 0,
+          "title": "As Of Ns",
+          "type": "integer"
+        },
+        "feature_name": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Feature Name",
+          "type": "string"
+        },
+        "feature_version": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Feature Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "feature_name",
+        "feature_version",
+        "as_of_ns"
+      ],
+      "title": "FeatureRef",
+      "type": "object"
+    }
+  },
+  "$id": "https://corei.local/schemas/strategy.signal.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "as_of_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "As Of Ns",
+      "type": "integer"
+    },
+    "direction": {
+      "$ref": "#/$defs/Direction"
+    },
+    "expires_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Expires At Ns",
+      "type": "integer"
+    },
+    "inputs": {
+      "items": {
+        "$ref": "#/$defs/FeatureRef"
+      },
+      "minItems": 1,
+      "title": "Inputs",
+      "type": "array"
+    },
+    "instrument_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "signal_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Signal Id",
+      "type": "string"
+    },
+    "strategy_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Strategy Id",
+      "type": "string"
+    },
+    "strategy_version": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Strategy Version",
+      "type": "string"
+    },
+    "strength_bps": {
+      "maximum": 10000,
+      "minimum": 0,
+      "title": "Strength Bps",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "signal_id",
+    "strategy_id",
+    "strategy_version",
+    "instrument_id",
+    "direction",
+    "strength_bps",
+    "as_of_ns",
+    "expires_at_ns",
+    "inputs"
+  ],
+  "title": "Signal",
+  "type": "object",
+  "x-corei-event-type": "strategy.signal",
+  "x-corei-schema-version": 1
+}

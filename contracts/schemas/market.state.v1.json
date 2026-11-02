@@ -1,0 +1,127 @@
+{
+  "$defs": {
+    "Freshness": {
+      "enum": [
+        "FRESH",
+        "STALE",
+        "UNKNOWN"
+      ],
+      "title": "Freshness",
+      "type": "string"
+    },
+    "SessionStatus": {
+      "enum": [
+        "PRE_OPEN",
+        "OPEN",
+        "HALTED",
+        "CLOSED",
+        "UNKNOWN"
+      ],
+      "title": "SessionStatus",
+      "type": "string"
+    },
+    "StateSource": {
+      "enum": [
+        "MEASURED",
+        "DERIVED",
+        "SIMULATED",
+        "UNAVAILABLE"
+      ],
+      "title": "StateSource",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/market.state.v1.json",
+  "additionalProperties": false,
+  "description": "Measured trust state for an instrument (F26, C10). UNKNOWN is never healthy.",
+  "properties": {
+    "as_of_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "As Of Ns",
+      "type": "integer"
+    },
+    "expires_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Expires At Ns",
+      "type": "integer"
+    },
+    "feed_session_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Feed Session Id"
+    },
+    "freshness": {
+      "$ref": "#/$defs/Freshness"
+    },
+    "instrument_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "last_observation_ns": {
+      "anyOf": [
+        {
+          "exclusiveMaximum": 100000000000000000000,
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Last Observation Ns"
+    },
+    "open_gaps": {
+      "title": "Open Gaps",
+      "type": "integer"
+    },
+    "session_status": {
+      "$ref": "#/$defs/SessionStatus"
+    },
+    "source": {
+      "$ref": "#/$defs/StateSource"
+    },
+    "watermark_ns": {
+      "anyOf": [
+        {
+          "exclusiveMaximum": 100000000000000000000,
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Watermark Ns"
+    }
+  },
+  "required": [
+    "instrument_id",
+    "as_of_ns",
+    "watermark_ns",
+    "last_observation_ns",
+    "freshness",
+    "session_status",
+    "open_gaps",
+    "source",
+    "feed_session_id",
+    "expires_at_ns"
+  ],
+  "title": "MarketState",
+  "type": "object",
+  "x-corei-event-type": "market.state",
+  "x-corei-schema-version": 1
+}

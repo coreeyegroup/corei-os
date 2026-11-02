@@ -1,0 +1,127 @@
+{
+  "$defs": {
+    "DataOrigin": {
+      "description": "Where data came from. Simulated data never enters observed datasets (F42).",
+      "enum": [
+        "OBSERVED",
+        "REPLAYED",
+        "SIMULATED"
+      ],
+      "title": "DataOrigin",
+      "type": "string"
+    },
+    "SessionStatus": {
+      "enum": [
+        "PRE_OPEN",
+        "OPEN",
+        "HALTED",
+        "CLOSED",
+        "UNKNOWN"
+      ],
+      "title": "SessionStatus",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/market.status.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "feed_session_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Feed Session Id",
+      "type": "string"
+    },
+    "instrument_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "kind": {
+      "const": "STATUS",
+      "default": "STATUS",
+      "title": "Kind",
+      "type": "string"
+    },
+    "observation_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Observation Id",
+      "type": "string"
+    },
+    "origin": {
+      "$ref": "#/$defs/DataOrigin"
+    },
+    "price_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Price Scale",
+      "type": "integer"
+    },
+    "provider": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Provider",
+      "type": "string"
+    },
+    "provider_sequence": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Provider Sequence"
+    },
+    "provider_ts_ns": {
+      "anyOf": [
+        {
+          "exclusiveMaximum": 100000000000000000000,
+          "exclusiveMinimum": 0,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Provider Ts Ns"
+    },
+    "raw_evidence_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Raw Evidence Hash",
+      "type": "string"
+    },
+    "receive_ts_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Receive Ts Ns",
+      "type": "integer"
+    },
+    "session_status": {
+      "$ref": "#/$defs/SessionStatus"
+    }
+  },
+  "required": [
+    "observation_id",
+    "provider",
+    "feed_session_id",
+    "instrument_id",
+    "origin",
+    "provider_ts_ns",
+    "receive_ts_ns",
+    "price_scale",
+    "raw_evidence_hash",
+    "session_status"
+  ],
+  "title": "StatusObservation",
+  "type": "object",
+  "x-corei-event-type": "market.status",
+  "x-corei-schema-version": 1
+}

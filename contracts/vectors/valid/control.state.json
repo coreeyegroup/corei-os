@@ -1,0 +1,24 @@
+{
+  "event_id": "evt_c7d278e23647a4674b5b60db87657e7f",
+  "event_type": "control.state",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "ACCOUNT:acc_paper_a",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000070000000000,
+  "recorded_at_ns": 1788000070000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.1.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "025af0cbbb4b84f3a1affdd6272f7bdd863563ec53a854024e720f884cb9b227",
+  "payload": {
+    "scope": "ACCOUNT:acc_paper_a",
+    "version": 6,
+    "mode": "PAPER",
+    "halted": true,
+    "halt_reason": "reconciliation break brk_001",
+    "updated_at_ns": 1788000070000000000,
+    "updated_by": "reconciler"
+  }
+}

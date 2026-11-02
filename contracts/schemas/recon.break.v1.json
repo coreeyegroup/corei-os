@@ -1,0 +1,131 @@
+{
+  "$defs": {
+    "BreakKind": {
+      "enum": [
+        "POSITION",
+        "ORDER",
+        "FILL",
+        "CASH",
+        "MISSING_DATA"
+      ],
+      "title": "BreakKind",
+      "type": "string"
+    },
+    "BreakState": {
+      "enum": [
+        "DETECTED",
+        "SCOPED_HALT",
+        "INVESTIGATING",
+        "RESOLUTION_PROPOSED",
+        "APPROVED",
+        "APPLIED",
+        "VERIFIED",
+        "CLOSED"
+      ],
+      "title": "BreakState",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/recon.break.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "account_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Account Id",
+      "type": "string"
+    },
+    "break_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Break Id",
+      "type": "string"
+    },
+    "broker_value": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Broker Value"
+    },
+    "cutoff_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Cutoff Ns",
+      "type": "integer"
+    },
+    "detected_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Detected At Ns",
+      "type": "integer"
+    },
+    "halt_scope": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Halt Scope",
+      "type": "string"
+    },
+    "instrument_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Instrument Id"
+    },
+    "internal_value": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Internal Value"
+    },
+    "kind": {
+      "$ref": "#/$defs/BreakKind"
+    },
+    "state": {
+      "$ref": "#/$defs/BreakState"
+    },
+    "updated_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Updated At Ns",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "break_id",
+    "account_id",
+    "kind",
+    "cutoff_ns",
+    "internal_value",
+    "broker_value",
+    "state",
+    "halt_scope",
+    "detected_at_ns",
+    "updated_at_ns"
+  ],
+  "title": "ReconciliationBreak",
+  "type": "object",
+  "x-corei-event-type": "recon.break",
+  "x-corei-schema-version": 1
+}

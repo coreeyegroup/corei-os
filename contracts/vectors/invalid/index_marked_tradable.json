@@ -1,0 +1,30 @@
+{
+  "event_type": "reference.instrument",
+  "expect_error": "INDEX",
+  "finding": "C05",
+  "payload": {
+    "contract_multiplier_units": 1,
+    "currency_scale": 2,
+    "instrument_id": "ins_test_fut_a",
+    "kind": "INDEX",
+    "max_quantity_units": null,
+    "min_quantity_units": 25,
+    "multiplier_scale": 0,
+    "option_right": null,
+    "price_scale": 2,
+    "provider_keys": {
+      "upstox": "TEST_FO|00001"
+    },
+    "quantity_scale": 0,
+    "quantity_step_units": 25,
+    "settlement_currency": "INR",
+    "strike_units": null,
+    "symbol": "TEST-A-FUT",
+    "tick_size_units": 5,
+    "tradable": true,
+    "valid_from_ns": 1788000000000000000,
+    "valid_to_ns": null,
+    "venue": "TESTX",
+    "version": 1
+  }
+}

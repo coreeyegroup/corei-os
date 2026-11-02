@@ -1,0 +1,177 @@
+{
+  "$defs": {
+    "ExecutionMode": {
+      "enum": [
+        "OFF",
+        "SIMULATION",
+        "PAPER",
+        "LIVE_SEMI",
+        "LIVE_AUTO"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    },
+    "MoneyAmount": {
+      "additionalProperties": false,
+      "properties": {
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "scale": {
+          "maximum": 18,
+          "minimum": 0,
+          "title": "Scale",
+          "type": "integer"
+        },
+        "units": {
+          "maximum": 1000000000000000000000000000000,
+          "minimum": -1000000000000000000000000000000,
+          "title": "Units",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "units",
+        "currency",
+        "scale"
+      ],
+      "title": "MoneyAmount",
+      "type": "object"
+    },
+    "Side": {
+      "enum": [
+        "BUY",
+        "SELL"
+      ],
+      "title": "Side",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/order.fill.v1.json",
+  "additionalProperties": false,
+  "description": "One broker execution, deduplicated by (account, broker, execution id) (F21).",
+  "properties": {
+    "account_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Account Id",
+      "type": "string"
+    },
+    "broker": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Broker",
+      "type": "string"
+    },
+    "broker_execution_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Broker Execution Id",
+      "type": "string"
+    },
+    "broker_order_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Broker Order Id",
+      "type": "string"
+    },
+    "executed_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Executed At Ns",
+      "type": "integer"
+    },
+    "fees": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/MoneyAmount"
+      },
+      "title": "Fees",
+      "type": "array"
+    },
+    "fill_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Fill Id",
+      "type": "string"
+    },
+    "instrument_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Instrument Id",
+      "type": "string"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "order_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Order Id",
+      "type": "string"
+    },
+    "price_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Price Scale",
+      "type": "integer"
+    },
+    "price_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Price Units",
+      "type": "integer"
+    },
+    "quantity_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Quantity Scale",
+      "type": "integer"
+    },
+    "quantity_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Quantity Units",
+      "type": "integer"
+    },
+    "received_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Received At Ns",
+      "type": "integer"
+    },
+    "side": {
+      "$ref": "#/$defs/Side"
+    }
+  },
+  "required": [
+    "fill_id",
+    "account_id",
+    "broker",
+    "order_id",
+    "broker_order_id",
+    "broker_execution_id",
+    "instrument_id",
+    "side",
+    "quantity_units",
+    "quantity_scale",
+    "price_units",
+    "price_scale",
+    "executed_at_ns",
+    "received_at_ns",
+    "mode"
+  ],
+  "title": "Fill",
+  "type": "object",
+  "x-corei-event-type": "order.fill",
+  "x-corei-schema-version": 1
+}

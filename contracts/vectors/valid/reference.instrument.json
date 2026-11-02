@@ -1,0 +1,42 @@
+{
+  "event_id": "evt_2d92eaa8acefca3563971712fc8029ed",
+  "event_type": "reference.instrument",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "ins_test_fut_a",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000000000000000,
+  "recorded_at_ns": 1788000000000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.1.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "ebf5208deff91395d14d1addc621a4f0c97a8056b155c8e6d16d8e2d2fe94831",
+  "payload": {
+    "instrument_id": "ins_test_fut_a",
+    "version": 1,
+    "venue": "TESTX",
+    "symbol": "TEST-A-FUT",
+    "kind": "FUTURE",
+    "tradable": true,
+    "underlying_id": "ins_test_idx_a",
+    "expiry_ns": 1790592000000000000,
+    "strike_units": null,
+    "option_right": null,
+    "price_scale": 2,
+    "tick_size_units": 5,
+    "quantity_scale": 0,
+    "quantity_step_units": 25,
+    "min_quantity_units": 25,
+    "max_quantity_units": null,
+    "contract_multiplier_units": 1,
+    "multiplier_scale": 0,
+    "settlement_currency": "INR",
+    "currency_scale": 2,
+    "provider_keys": {
+      "upstox": "TEST_FO|00001"
+    },
+    "valid_from_ns": 1788000000000000000,
+    "valid_to_ns": null
+  }
+}

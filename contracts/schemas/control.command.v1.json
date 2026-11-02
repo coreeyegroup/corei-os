@@ -1,0 +1,108 @@
+{
+  "$defs": {
+    "ControlCommandType": {
+      "enum": [
+        "SET_MODE",
+        "HALT_NEW_ORDERS",
+        "RELEASE_HALT",
+        "CANCEL_OPEN_ORDERS",
+        "FLATTEN_POSITIONS"
+      ],
+      "title": "ControlCommandType",
+      "type": "string"
+    },
+    "ExecutionMode": {
+      "enum": [
+        "OFF",
+        "SIMULATION",
+        "PAPER",
+        "LIVE_SEMI",
+        "LIVE_AUTO"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/control.command.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "actor": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Actor",
+      "type": "string"
+    },
+    "at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "At Ns",
+      "type": "integer"
+    },
+    "authorization_ref": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Authorization Ref",
+      "type": "string"
+    },
+    "command_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Command Id",
+      "type": "string"
+    },
+    "expected_version": {
+      "minimum": 0,
+      "title": "Expected Version",
+      "type": "integer"
+    },
+    "mode": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reason"
+    },
+    "scope": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Scope",
+      "type": "string"
+    },
+    "type": {
+      "$ref": "#/$defs/ControlCommandType"
+    }
+  },
+  "required": [
+    "command_id",
+    "type",
+    "scope",
+    "expected_version",
+    "actor",
+    "authorization_ref",
+    "at_ns"
+  ],
+  "title": "ControlCommandContract",
+  "type": "object",
+  "x-corei-event-type": "control.command",
+  "x-corei-schema-version": 1
+}

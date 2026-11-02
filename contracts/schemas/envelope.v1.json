@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "ExecutionMode": {
+      "enum": [
+        "OFF",
+        "SIMULATION",
+        "PAPER",
+        "LIVE_SEMI",
+        "LIVE_AUTO"
+      ],
+      "title": "ExecutionMode",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/envelope.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "causation_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Causation Id"
+    },
+    "correlation_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Correlation Id",
+      "type": "string"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "event_type": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Event Type",
+      "type": "string"
+    },
+    "mode": {
+      "$ref": "#/$defs/ExecutionMode"
+    },
+    "occurred_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Occurred At Ns",
+      "type": "integer"
+    },
+    "partition_key": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Partition Key",
+      "type": "string"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "payload_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Payload Hash",
+      "type": "string"
+    },
+    "producer": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Producer",
+      "type": "string"
+    },
+    "producer_version": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Producer Version",
+      "type": "string"
+    },
+    "recorded_at_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "Recorded At Ns",
+      "type": "integer"
+    },
+    "schema_version": {
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "tenant_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Tenant Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "tenant_id",
+    "partition_key",
+    "mode",
+    "occurred_at_ns",
+    "recorded_at_ns",
+    "producer",
+    "producer_version",
+    "correlation_id",
+    "payload_hash",
+    "payload"
+  ],
+  "title": "EventEnvelope",
+  "type": "object"
+}

@@ -1,0 +1,35 @@
+{
+  "event_id": "evt_7c45fa73a63edb65c3bad09594e4ca87",
+  "event_type": "trade.intent",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "int_001",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000060000000000,
+  "recorded_at_ns": 1788000060000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.1.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "fa07ed1b4903c42c82e4be9d439d823881d25844bbb6464e3075e1ef40d7eaec",
+  "payload": {
+    "intent_id": "int_001",
+    "origin": "CORE",
+    "source_ref": "ema_cross",
+    "capital_partition": "core",
+    "instrument_id": "ins_test_fut_a",
+    "side": "BUY",
+    "purpose": "OPEN",
+    "strategy_id": "ema_cross",
+    "strategy_version": "1.0.0",
+    "allowed_accounts": [
+      "acc_paper_a",
+      "acc_paper_b"
+    ],
+    "signal_ids": [
+      "sig_001"
+    ],
+    "as_of_ns": 1788000060000000000,
+    "expires_at_ns": 1788000120000000000
+  }
+}

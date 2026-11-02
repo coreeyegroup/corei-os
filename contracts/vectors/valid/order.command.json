@@ -1,0 +1,54 @@
+{
+  "event_id": "evt_34fa096e05dfe08a09658477e135165a",
+  "event_type": "order.command",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "acc_paper_a",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000060000000000,
+  "recorded_at_ns": 1788000060000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.1.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "4f999f8ef4662ba0c59ea82a892d2ced0d9e67d8551788a99e134d0466e1b1a9",
+  "payload": {
+    "command_id": "cmd_b2cdd39e134bbd194fc1cc8c5972b9d0",
+    "client_order_id": "cli_5e7c6f4d6dc543d55e07fd5f176646a0",
+    "account_id": "acc_paper_a",
+    "portfolio_id": "pf_paper_a",
+    "mode": "PAPER",
+    "origin": "CORE",
+    "capital_partition": "core",
+    "intent_id": "int_001",
+    "strategy_id": "ema_cross",
+    "strategy_version": "1.0.0",
+    "instrument_id": "ins_test_fut_a",
+    "instrument_version": 1,
+    "side": "BUY",
+    "purpose": "OPEN",
+    "order_type": "LIMIT",
+    "time_in_force": "DAY",
+    "quantity_units": 50,
+    "quantity_scale": 0,
+    "limit_price_units": 2350500,
+    "price_scale": 2,
+    "reservation_id": "rsv_001",
+    "risk_decision_id": "rsk_001",
+    "policy_decision_id": "pol_001",
+    "portfolio_state_version": 7,
+    "control_fence": [
+      [
+        "GLOBAL",
+        3
+      ],
+      [
+        "ACCOUNT:acc_paper_a",
+        5
+      ]
+    ],
+    "config_version": "cfg_v1",
+    "as_of_ns": 1788000060000000000,
+    "expires_at_ns": 1788000120000000000
+  }
+}
