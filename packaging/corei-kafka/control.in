@@ -1,0 +1,15 @@
+Package: corei-kafka
+Version: @VERSION@
+Section: misc
+Priority: optional
+Architecture: all
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Depends: openjdk-21-jre-headless | openjdk-17-jre-headless, adduser, curl, ca-certificates
+Installed-Size: @SIZE@
+Homepage: https://kafka.apache.org/
+Description: Apache Kafka @KAFKA_VERSION@ (KRaft, single node) packaged for COREI OS
+ Downloads the official Apache Kafka @KAFKA_VERSION@ release (Apache License 2.0)
+ at install time and refuses it unless its SHA-512 matches the value verified
+ against Apache's signed release at build time. Provides a localhost-only
+ single-node KRaft configuration and a systemd service.
+ For production clusters with replication, use a dedicated Kafka deployment.

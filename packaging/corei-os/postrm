@@ -1,0 +1,16 @@
+#!/bin/sh
+set -e
+case "$1" in
+remove)
+    rm -rf /opt/corei-os  # byte-code caches written after install
+    if [ -d /run/systemd/system ]; then systemctl daemon-reload || true; fi
+    ;;
+purge)
+    rm -rf /opt/corei-os
+    rm -f /etc/apt/apt.conf.d/52corei-os-auto-update
+    if [ -d /run/systemd/system ]; then systemctl daemon-reload || true; fi
+    echo "corei-os: purged. Data in /var/lib/corei-os, backups in /var/backups/corei-os and the"
+    echo "corei-os: PostgreSQL database 'corei' are kept; remove them yourself if no longer needed."
+    ;;
+esac
+exit 0

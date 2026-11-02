@@ -1,0 +1,7 @@
+[Unit]
+Description=COREI OS (all services)
+Documentation=https://github.com/coreeyegroup/corei-os
+Wants=corei-api.service corei-relay.service corei-ledger.service
+
+[Install]
+WantedBy=multi-user.target

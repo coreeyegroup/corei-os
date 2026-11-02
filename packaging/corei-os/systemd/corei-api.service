@@ -1,0 +1,32 @@
+[Unit]
+Description=COREI OS operator API
+Documentation=https://github.com/coreeyegroup/corei-os
+After=network-online.target postgresql.service
+Wants=network-online.target
+PartOf=corei-os.target
+
+[Service]
+Type=simple
+User=corei
+Group=corei
+EnvironmentFile=/etc/corei-os/corei.env
+Environment=COREI_ENV_FILE=/dev/null
+ExecStart=/usr/bin/corei-os api
+Restart=on-failure
+RestartSec=5
+# Exit code 2 = configuration error: do not restart in a loop, fix the config.
+RestartPreventExitStatus=2
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+ReadWritePaths=/var/lib/corei-os
+
+[Install]
+WantedBy=corei-os.target

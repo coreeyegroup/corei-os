@@ -1,0 +1,41 @@
+#!/bin/sh
+# Install the pinned Apache Kafka release into /opt/corei-kafka.
+# The SHA-512 was checked against Apache's signed release when this package was built;
+# the download is refused unless it matches exactly. A pre-downloaded tarball in
+# /var/cache/corei-kafka/ is used if present (offline installs).
+set -eu
+VERSION=$(cat /usr/share/corei-kafka/kafka-version)
+EXPECTED=$(cat /usr/share/corei-kafka/kafka.sha512)
+NAME="kafka_2.13-${VERSION}.tgz"
+CACHE=/var/cache/corei-kafka
+TARGET=/opt/corei-kafka
+
+if [ -f "$TARGET/COREI_KAFKA_VERSION" ] && [ "$(cat "$TARGET/COREI_KAFKA_VERSION")" = "$VERSION" ]; then
+    exit 0
+fi
+install -d -m 0755 "$CACHE"
+if [ -f "$CACHE/$NAME" ] && [ "$(sha512sum "$CACHE/$NAME" | cut -d' ' -f1)" = "$EXPECTED" ]; then
+    echo "corei-kafka: using cached $CACHE/$NAME"
+else
+    rm -f "$CACHE/$NAME.part"
+    for url in "https://dlcdn.apache.org/kafka/${VERSION}/${NAME}" \
+               "https://archive.apache.org/dist/kafka/${VERSION}/${NAME}"; do
+        echo "corei-kafka: downloading $url"
+        if curl -fsSL --retry 3 --connect-timeout 20 -o "$CACHE/$NAME.part" "$url"; then break; fi
+    done
+    [ -f "$CACHE/$NAME.part" ] || { echo "corei-kafka: download failed"; exit 1; }
+    GOT=$(sha512sum "$CACHE/$NAME.part" | cut -d' ' -f1)
+    if [ "$GOT" != "$EXPECTED" ]; then
+        rm -f "$CACHE/$NAME.part"
+        echo "corei-kafka: checksum mismatch for $NAME; refusing to install"; exit 1
+    fi
+    mv "$CACHE/$NAME.part" "$CACHE/$NAME"
+fi
+NEW="$TARGET.new"
+rm -rf "$NEW"; install -d "$NEW"
+tar -xzf "$CACHE/$NAME" -C "$NEW" --strip-components=1 --no-same-owner
+rm -rf "$NEW/site-docs" "$NEW/bin/windows"
+echo "$VERSION" > "$NEW/COREI_KAFKA_VERSION"
+rm -rf "$TARGET.old"; [ -d "$TARGET" ] && mv "$TARGET" "$TARGET.old"
+mv "$NEW" "$TARGET"; rm -rf "$TARGET.old"
+echo "corei-kafka: Apache Kafka $VERSION installed in $TARGET"

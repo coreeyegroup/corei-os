@@ -46,3 +46,6 @@ secrets/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+
+# package builds
+dist-next/

@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+CONF=/etc/corei-kafka/server.properties
+DATA=/var/lib/corei-kafka/data
+case "$1" in
+configure)
+    /usr/lib/corei-kafka/fetch-kafka
+    if ! getent passwd corei-kafka >/dev/null; then
+        adduser --system --group --home /var/lib/corei-kafka --no-create-home \
+            --gecos "Kafka for COREI OS" corei-kafka >/dev/null
+    fi
+    install -d -o corei-kafka -g corei-kafka -m 0750 /var/lib/corei-kafka "$DATA"
+    install -d -o corei-kafka -g corei-kafka -m 0750 /var/log/corei-kafka
+    if [ ! -f "$DATA/meta.properties" ]; then
+        CLUSTER_ID=$(/opt/corei-kafka/bin/kafka-storage.sh random-uuid)
+        runuser -u corei-kafka -- env LOG_DIR=/var/log/corei-kafka \
+            /opt/corei-kafka/bin/kafka-storage.sh format -t "$CLUSTER_ID" -c "$CONF" >/dev/null
+        echo "corei-kafka: formatted new KRaft storage in $DATA"
+    fi
+    if [ -d /run/systemd/system ]; then
+        systemctl daemon-reload
+        systemctl enable corei-kafka.service >/dev/null 2>&1 || true
+        systemctl restart corei-kafka.service
+        i=0
+        until /opt/corei-kafka/bin/kafka-broker-api-versions.sh --bootstrap-server 127.0.0.1:9092 >/dev/null 2>&1; do
+            i=$((i + 1))
+            if [ "$i" -ge 60 ]; then echo "corei-kafka: WARNING broker not answering yet"; break; fi
+            sleep 2
+        done
+    fi
+    ;;
+esac
+exit 0

@@ -1,0 +1,172 @@
+name: packages
+
+# Build the Ubuntu packages, prove install / upgrade / purge on a real Ubuntu 24.04
+# machine with systemd, then publish them to the signed APT repository on GitHub Pages
+# (served from the gh-pages branch):
+#   push to main -> "edge" channel      tag vX.Y.Z -> "stable" channel
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  KAFKA_VERSION: 3.8.1
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.build.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Verify the Apache Kafka release (Apache signature and SHA-512)
+        id: kafka
+        run: |
+          set -euo pipefail
+          f="kafka_2.13-${KAFKA_VERSION}.tgz"
+          base="https://archive.apache.org/dist/kafka/${KAFKA_VERSION}"
+          cd "$RUNNER_TEMP"
+          for x in "$f" "$f.asc" "$f.sha512"; do curl -fsSL --retry 3 -o "$x" "$base/$x"; done
+          curl -fsSL --retry 3 -o KEYS https://downloads.apache.org/kafka/KEYS
+          export GNUPGHOME=$(mktemp -d)
+          gpg --batch --quiet --import KEYS
+          gpg --batch --verify "$f.asc" "$f"
+          got=$(sha512sum "$f" | cut -d' ' -f1)
+          published=$(tr -d ' \n\r\t' < "$f.sha512" | sed 's/^.*://' | tr 'A-F' 'a-f')
+          [ "$got" = "$published" ] || { echo "::error::SHA-512 differs from Apache's published value"; exit 1; }
+          pinned_file="$GITHUB_WORKSPACE/packaging/corei-kafka/kafka-${KAFKA_VERSION}.sha512"
+          if [ -f "$pinned_file" ] && [ "$(cat "$pinned_file")" != "$got" ]; then
+            echo "::error::SHA-512 differs from the value pinned in the repository"; exit 1
+          fi
+          echo "sha512=$got" >> "$GITHUB_OUTPUT"
+          echo "Kafka ${KAFKA_VERSION} SHA-512 (signature verified): $got"
+
+      - name: Build packages (and a newer build for the upgrade test)
+        id: build
+        env:
+          KAFKA_SHA512: ${{ steps.kafka.outputs.sha512 }}
+        run: |
+          set -euo pipefail
+          sudo env "PATH=$PATH" GITHUB_REF="$GITHUB_REF" KAFKA_SHA512="$KAFKA_SHA512" packaging/build-debs.sh
+          version=$(dpkg-deb -f dist/corei-os_*_amd64.deb Version)
+          sudo env "PATH=$PATH" DIST="$PWD/dist-next" VERSION_OVERRIDE="${version}+upgradetest" packaging/build-debs.sh
+          sudo chown -R "$(id -u):$(id -g)" dist dist-next
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          ls -l dist dist-next
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debs
+          path: |
+            dist/*.deb
+            dist-next/*.deb
+          if-no-files-found: error
+
+  install-test:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: debs
+      - name: Install, upgrade and purge on Ubuntu 24.04 with systemd
+        run: packaging/test/install-test.sh "$PWD/dist" "$PWD/dist-next"
+
+  publish:
+    needs: [build, install-test]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    concurrency:
+      group: apt-publish
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    outputs:
+      published: ${{ steps.check.outputs.ready }}
+      suite: ${{ steps.suite.outputs.suite }}
+    steps:
+      - name: Check the signing key is configured
+        id: check
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+        run: |
+          if [ -z "$APT_SIGNING_KEY" ]; then
+            echo "::warning::APT_SIGNING_KEY secret is not set; packages built and tested but not published. See docs/install.md (one-time setup)."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.check.outputs.ready == 'true'
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        if: steps.check.outputs.ready == 'true'
+        with:
+          name: debs
+
+      - name: Choose channel
+        id: suite
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "suite=stable" >> "$GITHUB_OUTPUT"; else echo "suite=edge" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Update the signed APT repository
+        if: steps.check.outputs.ready == 'true'
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+          SUITE: ${{ steps.suite.outputs.suite }}
+        run: |
+          set -euo pipefail
+          export GNUPGHOME=$(mktemp -d)
+          printf '%s\n' "$APT_SIGNING_KEY" | gpg --batch --quiet --import
+          site="$RUNNER_TEMP/site"
+          mkdir -p "$site"
+          if git ls-remote --exit-code origin gh-pages >/dev/null 2>&1; then
+            git fetch --depth 1 origin gh-pages
+            git --work-tree="$site" checkout origin/gh-pages -- .
+            git reset -q
+          fi
+          packaging/repo/publish-repo.sh "$site" "$SUITE" dist/*.deb
+          # Store the repository state as a single commit (no binary history build-up).
+          cd "$site"
+          rm -rf .git
+          git init -q -b gh-pages
+          git -c user.name="corei-os packages" -c user.email="noreply@coreeyegroup.github.io" add -A
+          git -c user.name="corei-os packages" -c user.email="noreply@coreeyegroup.github.io" \
+            commit -q -m "APT repository: $SUITE ${{ needs.build.outputs.version }}"
+          git push -q --force "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" gh-pages
+
+  verify-published:
+    needs: [build, publish]
+    if: needs.publish.outputs.published == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Install from the public repository exactly as a user would
+        env:
+          SUITE: ${{ needs.publish.outputs.suite }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+          url="https://coreeyegroup.github.io/corei-os/dists/$SUITE/main/binary-amd64/Packages"
+          for _ in $(seq 40); do curl -fsS "$url" 2>/dev/null | grep -qxF "Version: $VERSION" && break; sleep 15; done
+          curl -fsSL https://coreeyegroup.github.io/corei-os/install.sh | sudo COREI_SUITE="$SUITE" sh
+          [ "$(corei-os version)" = "$VERSION" ]
+          sudo corei-os bootstrap /etc/corei-os/profiles/paper-example.yaml >/dev/null
+          sudo corei-os status

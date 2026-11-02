@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+case "$1" in
+remove|purge)
+    if [ -d /run/systemd/system ]; then systemctl daemon-reload || true; fi
+    if [ "$1" = purge ]; then rm -rf /opt/corei-kafka /var/cache/corei-kafka; fi
+    [ "$1" = purge ] && echo "corei-kafka: data in /var/lib/corei-kafka is kept; delete it yourself if no longer needed."
+    ;;
+esac
+exit 0

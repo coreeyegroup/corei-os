@@ -24,6 +24,17 @@ corrections C01–C13) together with the assessment's findings **F01–F50**.
 No real orders exist anywhere in this codebase. Real-money execution is a
 separately authorized step (Delivery H).
 
+## Install on Ubuntu 24.04
+
+```bash
+curl -fsSL https://coreeyegroup.github.io/corei-os/install.sh | sudo sh   # install
+sudo apt update && sudo apt upgrade                                        # update
+sudo corei-os status                                                       # check
+```
+
+Packages, channels (`stable`, `edge`), backups before every upgrade, automatic
+updates and removal: [docs/install.md](docs/install.md). Design: [ADR 0004](docs/adr/0004-ubuntu-packages-and-updates.md).
+
 ## Layout
 
 ```
@@ -34,12 +45,14 @@ src/corei/reference/   legal entities, brokers, accounts and bindings, account g
 src/corei/ledger/      multi-currency cash, positions, fills (applied once), reservations, valuation
 src/corei/control/     durable modes and scoped halts, token auth and roles
 src/corei/api/         operator API: control commands, state, portfolio, health/readiness
+src/corei/cli.py       the `corei-os` command used by services, package scripts and operators
 config/                PAPER bootstrap: US/UK/Dubai entities, paper broker, FX majors/crosses + XAUUSD
 contracts/schemas/     language-neutral JSON Schemas exported from the contracts (generated)
 contracts/vectors/     valid/invalid example events every producer and consumer must agree on
 docs/findings/         F01–F50 register: status, delivery, gate and the tests that cover each
 docs/adr/              architecture decisions
 scripts/               schema/vector export, repo hygiene
+packaging/             Ubuntu packages (corei-os, corei-kafka, corei-os-server), APT repo tooling, install test
 tests/                 unit, contract and acceptance tests
 ```
 

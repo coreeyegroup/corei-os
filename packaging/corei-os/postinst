@@ -1,0 +1,50 @@
+#!/bin/sh
+# corei-os postinst: create the service user, then (when a database is configured)
+# back up, migrate and (re)start. A failed backup or migration fails the install,
+# so new code never runs against an old schema.
+set -e
+
+ENV_FILE=/etc/corei-os/corei.env
+UNITS="corei-api.service corei-relay.service corei-ledger.service"
+
+configured() { grep -Eq '^DATABASE_URL=.+' "$ENV_FILE" 2>/dev/null; }
+has_kafka() { grep -Eq '^KAFKA_BOOTSTRAP=.+' "$ENV_FILE" 2>/dev/null; }
+systemd_running() { [ -d /run/systemd/system ]; }
+
+case "$1" in
+configure)
+    if ! getent passwd corei >/dev/null; then
+        adduser --system --group --home /var/lib/corei-os --no-create-home \
+            --gecos "COREI OS services" corei >/dev/null
+    fi
+    install -d -o corei -g corei -m 0750 /var/lib/corei-os
+    install -d -o root -g root -m 0700 /var/backups/corei-os
+    chown root:corei "$ENV_FILE"
+    chmod 0640 "$ENV_FILE"
+    if systemd_running; then systemctl daemon-reload; fi
+
+    if configured; then
+        if [ -n "$2" ]; then
+            echo "corei-os: backing up the database before upgrading from $2"
+            corei-os backup --label pre-upgrade --keep 10
+        fi
+        echo "corei-os: applying database migrations"
+        corei-os migrate
+        if has_kafka; then
+            corei-os topology || echo "corei-os: WARNING Kafka topology not verified; check 'corei-os topology'"
+        fi
+        if systemd_running; then
+            systemctl enable corei-os.target $UNITS >/dev/null 2>&1 || true
+            systemctl restart corei-os.target
+        fi
+        if systemd_running; then
+            echo "corei-os: $(corei-os version) is running. Check with: sudo corei-os status"
+        else
+            echo "corei-os: $(corei-os version) is configured (systemd not running; services not started)"
+        fi
+    else
+        echo "corei-os: installed. Set DATABASE_URL in $ENV_FILE (or install corei-os-server)."
+    fi
+    ;;
+esac
+exit 0

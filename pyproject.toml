@@ -1,7 +1,7 @@
 [project]
 name = "corei-os"
-version = "0.1.0"
-description = "COREI trading platform — clean rebuild (Delivery A: contracts and foundation)"
+version = "0.3.0"
+description = "COREI OS — institutional intelligence and execution platform"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -12,6 +12,9 @@ dependencies = [
     "pyyaml>=6.0",
     "uvicorn>=0.32,<1",
 ]
+
+[project.scripts]
+corei-os = "corei.cli:main"
 
 [dependency-groups]
 dev = [
@@ -56,6 +59,8 @@ ignore = ["PLR2004", "PLR0913", "PLR0917", "RUF012"]
 # SQL statements are kept whole for readability.
 "src/corei/ledger/store.py" = ["E501"]
 "src/corei/control/store.py" = ["E501"]
+# Commands import their dependencies lazily so `corei-os version` and package scripts start fast.
+"src/corei/cli.py" = ["PLC0415"]
 "src/corei/reference/store.py" = ["E501"]
 
 [tool.mypy]

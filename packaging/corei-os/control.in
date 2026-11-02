@@ -1,0 +1,16 @@
+Package: corei-os
+Version: @VERSION@
+Section: misc
+Priority: optional
+Architecture: amd64
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Depends: python3.12, adduser, postgresql-client
+Recommends: corei-os-server
+Installed-Size: @SIZE@
+Homepage: https://github.com/coreeyegroup/corei-os
+Description: COREI OS institutional intelligence and execution platform
+ Operator API, outbox relay and ledger consumer for COREI OS, with the
+ corei-os command for migrations, backups, status and profiles.
+ .
+ Live trading is disabled in this build. Install corei-os-server for a
+ complete single-machine setup with PostgreSQL and Kafka.

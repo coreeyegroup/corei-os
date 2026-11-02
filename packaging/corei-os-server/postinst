@@ -1,0 +1,22 @@
+#!/bin/sh
+# corei-os-server postinst: runs after postgresql, corei-kafka and corei-os are configured.
+set -e
+case "$1" in
+configure)
+    if [ -d /run/systemd/system ]; then systemctl start postgresql.service; fi
+    i=0
+    until runuser -u postgres -- pg_isready -q; do
+        i=$((i + 1)); [ "$i" -ge 30 ] && { echo "corei-os-server: PostgreSQL not ready"; exit 1; }; sleep 1
+    done
+    corei-os setup-local --kafka 127.0.0.1:9092
+    corei-os migrate
+    corei-os topology || echo "corei-os-server: WARNING Kafka topology not verified; run 'sudo corei-os topology'"
+    if [ -d /run/systemd/system ]; then
+        systemctl enable corei-os.target corei-api.service corei-relay.service corei-ledger.service >/dev/null 2>&1 || true
+        systemctl restart corei-os.target
+    fi
+    echo "corei-os-server: COREI OS $(corei-os version) is installed and running."
+    echo "corei-os-server: next: sudo corei-os status   |   sudo corei-os bootstrap /etc/corei-os/profiles/paper-example.yaml"
+    ;;
+esac
+exit 0

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+case "$1" in
+remove|upgrade|deconfigure)
+    if [ -d /run/systemd/system ]; then
+        systemctl stop corei-os.target corei-api.service corei-relay.service corei-ledger.service 2>/dev/null || true
+    fi
+    ;;
+esac
+exit 0
