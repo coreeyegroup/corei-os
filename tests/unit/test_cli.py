@@ -93,3 +93,15 @@ def test_parser_knows_every_service_command() -> None:
         ["auto-update", "status"],
     ):
         assert parser.parse_args(argv).fn
+
+
+def test_version_needs_no_access_to_the_env_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    secret = tmp_path / "corei.env"
+    secret.write_text("COREI_ENV=prod\n")
+    secret.chmod(0o000)
+    monkeypatch.setenv("COREI_ENV_FILE", str(secret))
+    monkeypatch.setattr(cli, "load_environment", lambda _e: (_ for _ in ()).throw(AssertionError))
+    assert cli.main(["version"]) == 0
+    assert capsys.readouterr().out.strip()

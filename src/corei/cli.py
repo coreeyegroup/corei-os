@@ -57,6 +57,7 @@ AUTO_UPDATE_BODY = (
     'Unattended-Upgrade::Origins-Pattern { "origin=COREI OS,label=COREI OS"; };\n'
 )
 EXIT_NOT_READY = 3
+NO_SETTINGS_COMMANDS = frozenset({"version", "auto-update"})
 
 
 class CliError(RuntimeError):
@@ -469,7 +470,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     args = build_parser().parse_args(argv)
     try:
-        env = load_environment(dict(os.environ))
+        # `version` and `auto-update` need no settings, so they work without access to the env file.
+        if args.command in NO_SETTINGS_COMMANDS:
+            env = dict(os.environ)
+        else:
+            env = load_environment(dict(os.environ))
         result: int = args.fn(args, env)
         return result
     except CliError as exc:
