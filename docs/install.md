@@ -105,6 +105,8 @@ sudo corei-os backup                       # manual backup to /var/backups/corei
 sudo apt install corei-os=<older version>  # older package (listed by: apt-cache policy corei-os)
 ```
 
+Backups contain this host's tenant (row-level security is enforced). Restore one into an empty database with `PGOPTIONS="-c app.tenant_id=corei" pg_restore --no-owner -d <database> <dump>` (use your `COREI_TENANT`).
+
 Migrations only move forward. An older package refuses to start against a database that has newer migrations. To go back across a migration, restore the pre-upgrade backup with `pg_restore` first.
 
 ## Removing

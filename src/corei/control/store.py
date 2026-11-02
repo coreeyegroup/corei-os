@@ -125,7 +125,7 @@ def execute(
     conn.execute(
         """INSERT INTO control_state (scope, version, mode, halted, halt_reason, updated_at_ns, updated_by)
            VALUES (%s, %s, %s, %s, %s, %s, %s)
-           ON CONFLICT (scope) DO UPDATE SET version = EXCLUDED.version, mode = EXCLUDED.mode,
+           ON CONFLICT (tenant_id, scope) DO UPDATE SET version = EXCLUDED.version, mode = EXCLUDED.mode,
                halted = EXCLUDED.halted, halt_reason = EXCLUDED.halt_reason,
                updated_at_ns = EXCLUDED.updated_at_ns, updated_by = EXCLUDED.updated_by""",
         (

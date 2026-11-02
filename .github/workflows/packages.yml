@@ -89,8 +89,24 @@ jobs:
       - name: Install, upgrade and purge on ${{ matrix.os }} with systemd
         run: packaging/test/install-test.sh "$PWD/dist" "$PWD/dist-next"
 
+  upgrade-from-published:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: debs
+      - name: Upgrade the published edge release to this build on ${{ matrix.os }}
+        run: packaging/test/upgrade-from-published.sh "$PWD/dist"
+
   publish:
-    needs: [build, install-test]
+    needs: [build, install-test, upgrade-from-published]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     timeout-minutes: 15

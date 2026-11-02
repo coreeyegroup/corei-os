@@ -106,7 +106,7 @@ def bootstrap(config: dict[str, Any], settings: Settings, clock: Clock) -> dict[
     if mode not in {ExecutionMode.PAPER, ExecutionMode.BACKTEST}:
         raise SystemExit(f"bootstrap only supports PAPER/BACKTEST, got {mode}")
     ledger_kind = LedgerKind(mode.value)
-    connect = connection_factory(settings.database_url)
+    connect = connection_factory(settings.database_url, settings.tenant_id)
     with connect() as conn:
         applied = migrate(conn)
     now = clock.now_ns()

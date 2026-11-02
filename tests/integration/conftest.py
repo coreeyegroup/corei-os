@@ -29,7 +29,7 @@ from corei.contracts.reference import (
 )
 from corei.domain.timeutil import FixedClock
 from corei.domain.units import Money
-from corei.infra.db import migrate
+from corei.infra.db import migrate, tenant_options
 from corei.ledger import store as ledger
 from corei.reference import store as reference
 
@@ -55,6 +55,7 @@ TABLES = [
     "control_commands",
     "control_state",
 ]
+TENANT = "corei"  # the tenant every integration test runs as
 PAPER_BROKER = "brk_paper"
 UK_MT5 = "brk_mt5_uk"
 
@@ -75,7 +76,7 @@ def database_url() -> Iterator[str]:
     with psycopg.connect(admin, autocommit=True) as conn:
         conn.execute(sql.SQL("CREATE DATABASE {}").format(sql.Identifier(name)))
     url = psycopg.conninfo.make_conninfo(admin, dbname=name)
-    with psycopg.connect(url) as conn:
+    with psycopg.connect(url, options=tenant_options(TENANT)) as conn:
         migrate(conn)
         conn.commit()
     yield url
@@ -88,7 +89,7 @@ def database_url() -> Iterator[str]:
 @pytest.fixture
 def connect(database_url: str) -> Iterator[Callable[[], psycopg.Connection]]:
     def factory() -> psycopg.Connection:
-        return psycopg.connect(database_url)
+        return psycopg.connect(database_url, options=tenant_options(TENANT))
 
     with factory() as conn:
         conn.execute(

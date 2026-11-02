@@ -115,7 +115,7 @@ def _journal(
     )
     conn.execute(
         """INSERT INTO cash_balances (account_id, currency, currency_scale, balance_units)
-           VALUES (%s, %s, %s, %s) ON CONFLICT (account_id, currency)
+           VALUES (%s, %s, %s, %s) ON CONFLICT (tenant_id, account_id, currency)
            DO UPDATE SET balance_units = cash_balances.balance_units + EXCLUDED.balance_units""",
         (account_id, money.currency, money.scale, money.units),
     )
@@ -375,7 +375,7 @@ def apply_fill(conn: psycopg.Connection, fill: Fill, at_ns: int) -> FillOutcome:
         """INSERT INTO positions (account_id, instrument_id, quantity_units, quantity_scale,
                open_cost_units, realized_pnl_units, currency, currency_scale, updated_at_ns)
            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-           ON CONFLICT (account_id, instrument_id) DO UPDATE SET
+           ON CONFLICT (tenant_id, account_id, instrument_id) DO UPDATE SET
                quantity_units = EXCLUDED.quantity_units, open_cost_units = EXCLUDED.open_cost_units,
                realized_pnl_units = EXCLUDED.realized_pnl_units, updated_at_ns = EXCLUDED.updated_at_ns""",
         (

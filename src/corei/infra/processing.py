@@ -63,7 +63,7 @@ def enqueue(
     """Write an event to the outbox inside the caller's transaction (idempotent by event_id)."""
     conn.execute(
         """INSERT INTO outbox (event_id, event_type, topic, partition_key, envelope, created_at_ns)
-           VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (event_id) DO NOTHING""",
+           VALUES (%s, %s, %s, %s, %s, %s) ON CONFLICT (tenant_id, event_id) DO NOTHING""",
         (
             envelope.event_id,
             envelope.event_type,
@@ -128,7 +128,7 @@ class Processor:
             claimed = conn.execute(
                 """INSERT INTO inbox (consumer, event_id, event_type, outcome, processed_at_ns)
                        VALUES (%s, %s, %s, 'APPLIED', %s)
-                       ON CONFLICT (consumer, event_id) DO NOTHING RETURNING event_id""",
+                       ON CONFLICT (tenant_id, consumer, event_id) DO NOTHING RETURNING event_id""",
                 (self.consumer, envelope.event_id, envelope.event_type, now),
             ).fetchone()
             if claimed is None:

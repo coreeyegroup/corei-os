@@ -36,9 +36,22 @@ class Migration:
         return hashlib.sha256(self.sql.encode()).hexdigest()
 
 
-def connection_factory(database_url: str) -> ConnectionFactory:
+TENANT_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$")
+
+
+def tenant_options(tenant_id: str) -> str:
+    """libpq ``options`` that bind a connection to one tenant (row-level security, P2)."""
+    if not TENANT_RE.match(tenant_id):
+        raise ValueError(f"invalid tenant id {tenant_id!r}")
+    return f"-c app.tenant_id={tenant_id}"
+
+
+def connection_factory(database_url: str, tenant_id: str) -> ConnectionFactory:
+    """Connections bound to ``tenant_id``: every read and write is limited to that tenant."""
+    options = tenant_options(tenant_id)
+
     def connect() -> psycopg.Connection:
-        return psycopg.connect(database_url, autocommit=False)
+        return psycopg.connect(database_url, autocommit=False, options=options)
 
     return connect
 
@@ -69,8 +82,8 @@ def applied_versions(conn: psycopg.Connection) -> dict[int, str]:
     return {int(v): str(c) for v, c in rows}
 
 
-def migrate(conn: psycopg.Connection) -> list[int]:
-    """Apply pending migrations; return the versions applied now."""
+def migrate(conn: psycopg.Connection, upto: int | None = None) -> list[int]:
+    """Apply pending migrations (or only up to ``upto``); return the versions applied now."""
     applied_now: list[int] = []
     with conn.transaction():
         conn.execute("SELECT pg_advisory_xact_lock(%s)", (_LOCK_KEY,))
@@ -81,6 +94,8 @@ def migrate(conn: psycopg.Connection) -> list[int]:
         )
         done = applied_versions(conn)
         for mig in available_migrations():
+            if upto is not None and mig.version > upto:
+                break
             if mig.version in done:
                 if done[mig.version] != mig.checksum:
                     raise MigrationError(

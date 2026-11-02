@@ -182,7 +182,7 @@ def cmd_migrate(args: argparse.Namespace, env: dict[str, str]) -> int:
     from corei.infra.db import connection_factory, migrate, schema_status
 
     settings = _settings(env)
-    with connection_factory(settings.database_url)() as conn:
+    with connection_factory(settings.database_url, settings.tenant_id)() as conn:
         if args.check:
             applied, expected = schema_status(conn)
             print(f"schema: applied {applied}, expected {expected}")
@@ -198,7 +198,7 @@ def cmd_status(args: argparse.Namespace, env: dict[str, str]) -> int:
 
     settings = _settings(env)
     probe = _kafka_probe(settings.kafka_bootstrap) if settings.kafka_bootstrap else None
-    report = check_readiness(connection_factory(settings.database_url), probe)
+    report = check_readiness(connection_factory(settings.database_url, settings.tenant_id), probe)
     if args.json:
         print(json.dumps({"version": installed_version(), **report.as_dict()}, indent=2))
     else:
@@ -209,10 +209,10 @@ def cmd_status(args: argparse.Namespace, env: dict[str, str]) -> int:
 
 
 def cmd_backup(args: argparse.Namespace, env: dict[str, str]) -> int:
-    from corei.infra.db import connection_factory
+    from corei.infra.db import connection_factory, tenant_options
 
     settings = _settings(env)
-    with connection_factory(settings.database_url)() as conn:
+    with connection_factory(settings.database_url, settings.tenant_id)() as conn:
         has_schema = conn.execute("SELECT to_regclass('public.schema_migrations')").fetchone()
     if not has_schema or has_schema[0] is None:
         print("backup: database has no COREI schema yet; nothing to back up")
@@ -224,9 +224,19 @@ def cmd_backup(args: argparse.Namespace, env: dict[str, str]) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     target = out_dir / f"corei-{args.label}-{stamp}.dump"
+    # Row-level security is forced on every table, so the dump runs as this host's tenant
+    # (--enable-row-security) and contains exactly that tenant's rows plus the full schema.
     subprocess.run(
-        [pg_dump, "--format=custom", "--no-owner", f"--file={target}", settings.database_url],
+        [
+            pg_dump,
+            "--format=custom",
+            "--no-owner",
+            "--enable-row-security",
+            f"--file={target}",
+            settings.database_url,
+        ],
         check=True,
+        env={**os.environ, "PGOPTIONS": tenant_options(settings.tenant_id)},
     )
     target.chmod(0o600)
     dumps = sorted(out_dir.glob("corei-*.dump"), key=lambda p: p.stat().st_mtime, reverse=True)
@@ -272,7 +282,7 @@ def build_app(env: dict[str, str]) -> FastAPI:
     if mode not in settings.allowed_modes:
         raise CliError(f"COREI_ENVELOPE_MODE {mode} is not in COREI_ALLOWED_MODES")
     ctx = AppContext(
-        connect=connection_factory(settings.database_url),
+        connect=connection_factory(settings.database_url, settings.tenant_id),
         authenticator=TokenAuthenticator.from_config(env.get("COREI_API_PRINCIPALS", "")),
         clock=SystemClock(),
         environment=settings.environment,
@@ -322,7 +332,7 @@ def cmd_relay(args: argparse.Namespace, env: dict[str, str]) -> int:
     settings = _settings(env)
     if not settings.kafka_bootstrap:
         raise CliError("KAFKA_BOOTSTRAP is not set")
-    connect = connection_factory(settings.database_url)
+    connect = connection_factory(settings.database_url, settings.tenant_id)
     publisher = KafkaPublisher(settings.kafka_bootstrap)
     clock = SystemClock()
 
@@ -354,7 +364,7 @@ def cmd_ledger_consumer(_args: argparse.Namespace, env: dict[str, str]) -> int:
         environment=settings.environment,
         allowed_modes=settings.allowed_modes,
         handlers={"order.fill": make_fill_handler(clock.now_ns)},
-        connect=connection_factory(settings.database_url),
+        connect=connection_factory(settings.database_url, settings.tenant_id),
         clock=clock,
     )
     topic = topic_for("order.fill", settings.environment)

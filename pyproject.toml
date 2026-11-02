@@ -1,6 +1,6 @@
 [project]
 name = "corei-os"
-version = "0.3.0"
+version = "0.4.0"
 description = "COREI OS — institutional intelligence and execution platform"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -61,6 +61,8 @@ ignore = ["PLR2004", "PLR0913", "PLR0917", "RUF012"]
 "src/corei/control/store.py" = ["E501"]
 # Commands import their dependencies lazily so `corei-os version` and package scripts start fast.
 "src/corei/cli.py" = ["PLC0415"]
+# Raw SQL fixtures that recreate older schemas are kept on one line each.
+"tests/integration/test_tenancy.py" = ["E501"]
 "src/corei/reference/store.py" = ["E501"]
 
 [tool.mypy]

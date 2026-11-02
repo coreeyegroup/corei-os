@@ -18,8 +18,8 @@ if [ -f "$CACHE/$NAME" ] && [ "$(sha512sum "$CACHE/$NAME" | cut -d' ' -f1)" = "$
     echo "corei-kafka: using cached $CACHE/$NAME"
 else
     rm -f "$CACHE/$NAME.part"
-    for url in "https://dlcdn.apache.org/kafka/${VERSION}/${NAME}" \
-               "https://archive.apache.org/dist/kafka/${VERSION}/${NAME}"; do
+    for url in "https://archive.apache.org/dist/kafka/${VERSION}/${NAME}" \
+               "https://dlcdn.apache.org/kafka/${VERSION}/${NAME}"; do
         echo "corei-kafka: downloading $url"
         if curl -fsSL --retry 3 --connect-timeout 20 -o "$CACHE/$NAME.part" "$url"; then break; fi
     done

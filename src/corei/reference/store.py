@@ -120,7 +120,7 @@ def upsert_entity(conn: psycopg.Connection, spec: LegalEntity) -> None:
             raise ReferenceError(f"entity {spec.entity_id}: v{spec.version} is older than stored")
     conn.execute(
         """INSERT INTO legal_entities (entity_id, jurisdiction, base_currency, version, spec)
-           VALUES (%s, %s, %s, %s, %s) ON CONFLICT (entity_id) DO UPDATE SET
+           VALUES (%s, %s, %s, %s, %s) ON CONFLICT (tenant_id, entity_id) DO UPDATE SET
            jurisdiction = EXCLUDED.jurisdiction, base_currency = EXCLUDED.base_currency,
            version = EXCLUDED.version, spec = EXCLUDED.spec""",
         (spec.entity_id, spec.jurisdiction, spec.base_currency, spec.version, Jsonb(data)),
@@ -149,7 +149,7 @@ def upsert_broker(conn: psycopg.Connection, spec: BrokerSpec) -> None:
             raise ReferenceError(f"broker {spec.broker_id}: v{spec.version} is older than stored")
     conn.execute(
         """INSERT INTO brokers (broker_id, platform, version, spec) VALUES (%s, %s, %s, %s)
-           ON CONFLICT (broker_id) DO UPDATE SET platform = EXCLUDED.platform,
+           ON CONFLICT (tenant_id, broker_id) DO UPDATE SET platform = EXCLUDED.platform,
            version = EXCLUDED.version, spec = EXCLUDED.spec""",
         (spec.broker_id, spec.platform.value, spec.version, Jsonb(data)),
     )
@@ -236,7 +236,7 @@ def register_account(conn: psycopg.Connection, spec: AccountSpec, at_ns: int) ->
     for b in spec.bindings:
         conn.execute(
             """INSERT INTO broker_bindings (account_id, rank, broker_id, broker_account_ref, credential_ref)
-               VALUES (%s, %s, %s, %s, %s) ON CONFLICT (account_id, broker_id) DO UPDATE SET
+               VALUES (%s, %s, %s, %s, %s) ON CONFLICT (tenant_id, account_id, broker_id) DO UPDATE SET
                rank = EXCLUDED.rank, broker_account_ref = EXCLUDED.broker_account_ref,
                credential_ref = EXCLUDED.credential_ref""",
             (spec.account_id, b.rank, b.broker_id, b.broker_account_ref, b.credential_ref),
@@ -311,7 +311,7 @@ def upsert_group(conn: psycopg.Connection, spec: AccountGroup) -> None:
             raise ReferenceError(f"group {spec.group_id}: v{spec.version} is older than stored")
     conn.execute(
         """INSERT INTO account_groups (group_id, copy_master_account_id, version, spec)
-           VALUES (%s, %s, %s, %s) ON CONFLICT (group_id) DO UPDATE SET
+           VALUES (%s, %s, %s, %s) ON CONFLICT (tenant_id, group_id) DO UPDATE SET
            copy_master_account_id = EXCLUDED.copy_master_account_id,
            version = EXCLUDED.version, spec = EXCLUDED.spec""",
         (spec.group_id, spec.copy_master_account_id, spec.version, Jsonb(data)),
