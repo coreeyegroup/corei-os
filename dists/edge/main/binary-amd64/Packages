@@ -1,0 +1,170 @@
+Package: corei-kafka
+Architecture: all
+Version: 3.8.1-1corei1
+Priority: optional
+Section: misc
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Installed-Size: 80
+Depends: openjdk-21-jre-headless | openjdk-17-jre-headless, adduser, curl, ca-certificates
+Filename: pool/edge/corei-kafka_3.8.1-1corei1_all.deb
+Size: 4224
+MD5sum: 28e6e00700b09e4be3556864d9b53ad6
+SHA1: fe66c3079470a000d073c330b31210275c85b8d3
+SHA256: 078798e8dbe85cf915b3ac5900e61fa062e7f425449d8c591aad59cefffc5880
+SHA512: 4d19f4ea76791f55151f138b6155fe63e5ee754720bf44af087abdc127c10610fea29b18172e86228ffbdd8323a3a767ccedb7a150ae82dfe938ac91d39e8a6b
+Homepage: https://kafka.apache.org/
+Description: Apache Kafka 3.8.1 (KRaft, single node) packaged for COREI OS
+ Downloads the official Apache Kafka 3.8.1 release (Apache License 2.0)
+ at install time and refuses it unless its SHA-512 matches the value verified
+ against Apache's signed release at build time. Provides a localhost-only
+ single-node KRaft configuration and a systemd service.
+ For production clusters with replication, use a dedicated Kafka deployment.
+
+Package: corei-kafka
+Architecture: all
+Version: 3.8.1-2corei1
+Priority: optional
+Section: misc
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Installed-Size: 80
+Depends: openjdk-21-jre-headless | openjdk-17-jre-headless, adduser, curl, ca-certificates
+Filename: pool/edge/corei-kafka_3.8.1-2corei1_all.deb
+Size: 4220
+MD5sum: f301b772c158a0ab892f870629105e19
+SHA1: a2e974da67b7f3fad10200bf6d5c5bf6b308f214
+SHA256: dbeedc791831fbe70b86c6de91786d63353acfcde9fb0bea0af8de2c7f0da68f
+SHA512: 48d4af4bab99b674753cf90adc84da580f0c2de0a21a344d600d1e3cf77f19654a91176edf88875135ddaa61e99767b0e647125ba8cd70334e3133ca4897e67c
+Homepage: https://kafka.apache.org/
+Description: Apache Kafka 3.8.1 (KRaft, single node) packaged for COREI OS
+ Downloads the official Apache Kafka 3.8.1 release (Apache License 2.0)
+ at install time and refuses it unless its SHA-512 matches the value verified
+ against Apache's signed release at build time. Provides a localhost-only
+ single-node KRaft configuration and a systemd service.
+ For production clusters with replication, use a dedicated Kafka deployment.
+
+Package: corei-os-server
+Architecture: all
+Version: 0.3.0~dev20261102152058.g134a5b4
+Priority: optional
+Section: misc
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Depends: corei-os (= 0.3.0~dev20261102152058.g134a5b4), corei-kafka (>= 3.8.1), postgresql (>= 16), postgresql-client
+Filename: pool/edge/corei-os-server_0.3.0~dev20261102152058.g134a5b4_all.deb
+Size: 1888
+MD5sum: 755263d1a386b29c14366be1ec04be6b
+SHA1: 598e1d80ed5a7d8570295747427f0c8d6bd56c9e
+SHA256: 5c3e1f7dde772433fd9a049f25534b8fc0dc478a7ce6caa0c5e0d6a5f55a41fc
+SHA512: 645f8958e844ace441f1a5ede6b1cc1186b46d13f77fa6e5d96f0ceeaf13974df49bc60bd80f2059f8d59072e2619ea2df5f3ec8a717ef3d53391420f95a2b44
+Homepage: https://github.com/coreeyegroup/corei-os
+Description: COREI OS on one machine (PostgreSQL, Kafka and all services)
+ Installs and wires together PostgreSQL, a single-node Kafka and COREI OS:
+ creates the database with a generated password, applies migrations,
+ declares the Kafka topics and starts every COREI service.
+
+Package: corei-os-server
+Architecture: all
+Version: 0.3.0~dev20261102204343.gd360a2f
+Priority: optional
+Section: misc
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Depends: corei-os (= 0.3.0~dev20261102204343.gd360a2f), corei-kafka (>= 3.8.1), postgresql (>= 14), postgresql-client
+Filename: pool/edge/corei-os-server_0.3.0~dev20261102204343.gd360a2f_all.deb
+Size: 1892
+MD5sum: 1ad5229639ef24fe8d6a5d7742cc0c00
+SHA1: 0090a775ef225747699b171c1a56a63a72ba389e
+SHA256: 3ca709f82e332cc5c9d1f8cecf3103e990c130005b4335b7a1a3bf6aae18d344
+SHA512: 57eac0d0e9980ba922c8c88415cc27df6ab247ed248e0939626cf874ccc83114fbd61b639c949a475b0e94800c4dc59fa5b230ce41e0ea8a74bd45ab7bd1f615
+Homepage: https://github.com/coreeyegroup/corei-os
+Description: COREI OS on one machine (PostgreSQL, Kafka and all services)
+ Installs and wires together PostgreSQL, a single-node Kafka and COREI OS:
+ creates the database with a generated password, applies migrations,
+ declares the Kafka topics and starts every COREI service.
+
+Package: corei-os-server
+Architecture: all
+Version: 0.4.0~dev20261102213419.g3de3bfd
+Priority: optional
+Section: misc
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Depends: corei-os (= 0.4.0~dev20261102213419.g3de3bfd), corei-kafka (>= 3.8.1), postgresql (>= 14), postgresql-client
+Filename: pool/edge/corei-os-server_0.4.0~dev20261102213419.g3de3bfd_all.deb
+Size: 1880
+MD5sum: a3abbad0e6da3bc1cece8ac67ad53d37
+SHA1: 92ef491515a2739d8985a3ad229a02a132c25084
+SHA256: baae0c5364c34bbcf3d605a12df931822b0754e1313dbd09c5a0a6ac80b05137
+SHA512: ab6e562c49daaf394026e35773f84421f0576a625baf92752e157da21a2b602176f341ee0238516b7af3f1259309896ce68eef3c0d9a01082c18c2655acf71b5
+Homepage: https://github.com/coreeyegroup/corei-os
+Description: COREI OS on one machine (PostgreSQL, Kafka and all services)
+ Installs and wires together PostgreSQL, a single-node Kafka and COREI OS:
+ creates the database with a generated password, applies migrations,
+ declares the Kafka topics and starts every COREI service.
+
+Package: corei-os
+Architecture: amd64
+Version: 0.3.0~dev20261102152058.g134a5b4
+Priority: optional
+Section: misc
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Installed-Size: 60432
+Depends: python3.12, adduser, postgresql-client
+Recommends: corei-os-server
+Filename: pool/edge/corei-os_0.3.0~dev20261102152058.g134a5b4_amd64.deb
+Size: 12924896
+MD5sum: f6c7103b5e899aaf59fde3aca846ee2c
+SHA1: d6dcfac820a764f7520b5ae4bda9125efd0a9e2a
+SHA256: 0a7cf031b19b1f55a0e412529f30217dec526553c0e7b60a62a0f8fdadaf1cd9
+SHA512: 4340c932890f4ce3289dc7c9c208b0e6c13425a048c10957e25e417712c963fa01c77259b6ba449d3aaa8030c556e20684437a56c000e48cd94a9b337b55cd91
+Homepage: https://github.com/coreeyegroup/corei-os
+Description: COREI OS institutional intelligence and execution platform
+ Operator API, outbox relay and ledger consumer for COREI OS, with the
+ corei-os command for migrations, backups, status and profiles.
+ .
+ Live trading is disabled in this build. Install corei-os-server for a
+ complete single-machine setup with PostgreSQL and Kafka.
+
+Package: corei-os
+Architecture: amd64
+Version: 0.3.0~dev20261102204343.gd360a2f
+Priority: optional
+Section: misc
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Installed-Size: 149840
+Depends: adduser, postgresql-client
+Recommends: corei-os-server
+Filename: pool/edge/corei-os_0.3.0~dev20261102204343.gd360a2f_amd64.deb
+Size: 35221976
+MD5sum: f257424d632e7f5fdc20b66426fc12a9
+SHA1: 0aa21f8ee58fc11bc168fa595a6b3c7fd832de9c
+SHA256: 7045dde78d9b94764bb6d06a6a8098a859adb2921c541188475b5681ce00d203
+SHA512: 742ae89c685bf9cc6c1f2c42e47a0c3be1f9e783e4f87d284accb2da9264d765aea42079e7d618efe80c37a913b67ffbb7bccda1ba4fdc0aeddae4614ad8329a
+Homepage: https://github.com/coreeyegroup/corei-os
+Description: COREI OS institutional intelligence and execution platform
+ Operator API, outbox relay and ledger consumer for COREI OS, with the
+ corei-os command for migrations, backups, status and profiles.
+ .
+ Carries its own Python runtime. Live trading is disabled in this build. Install corei-os-server for a
+ complete single-machine setup with PostgreSQL and Kafka.
+
+Package: corei-os
+Architecture: amd64
+Version: 0.4.0~dev20261102213419.g3de3bfd
+Priority: optional
+Section: misc
+Maintainer: COREI OS <noreply@coreeyegroup.github.io>
+Installed-Size: 164400
+Depends: adduser, postgresql-client
+Recommends: corei-os-server
+Filename: pool/edge/corei-os_0.4.0~dev20261102213419.g3de3bfd_amd64.deb
+Size: 38460184
+MD5sum: d4cce89b0b1561ac919408ef65ecd72e
+SHA1: b55139495773a2fb92245ce2efba990d9779cec0
+SHA256: 7d85145258d082710ec014d210bc9105fd82277dc3dfc93cf918893b03b85718
+SHA512: fc61c96cb5891aa5dc145c73acef19caad4fab50233a3c255d08e9752c3d5b9e9103e42eaf3f50a5a4156f0d81fa6164e491a919fc149b28f0ff8c7202809f18
+Homepage: https://github.com/coreeyegroup/corei-os
+Description: COREI OS institutional intelligence and execution platform
+ Operator API, outbox relay and ledger consumer for COREI OS, with the
+ corei-os command for migrations, backups, status and profiles.
+ .
+ Carries its own Python runtime. Live trading is disabled in this build. Install corei-os-server for a
+ complete single-machine setup with PostgreSQL and Kafka.
+

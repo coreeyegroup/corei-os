@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COREI OS packages</title>
+<style>body{font:16px/1.5 system-ui,sans-serif;max-width:720px;margin:2rem auto;padding:0 16px;color:#1b1b1b;background:#fff}
+pre{background:#f4f4f2;padding:12px;overflow-x:auto;border-radius:6px}@media(prefers-color-scheme:dark){body{background:#151515;color:#e8e8e8}pre{background:#222}}</style>
+</head><body>
+<h1>COREI OS packages</h1>
+<p>Signed APT repository for Ubuntu 22.04 and 24.04 LTS (amd64).</p>
+<h2>Install</h2>
+<pre>curl -fsSL https://coreeyegroup.github.io/corei-os/install.sh | sudo sh</pre>
+<h2>Update</h2>
+<pre>sudo apt update &amp;&amp; sudo apt upgrade</pre>
+<p>Channels: <code>stable</code> (tagged releases, default) and <code>edge</code> (every merge to main):
+<code>curl -fsSL …/install.sh | sudo COREI_SUITE=edge sh</code></p>
+<p>Source: <a href="https://github.com/coreeyegroup/corei-os">github.com/coreeyegroup/corei-os</a></p>
+</body></html>

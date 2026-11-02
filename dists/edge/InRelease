@@ -1,0 +1,34 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Architectures: amd64
+Codename: edge
+Components: main
+Date: Mon, 02 Nov 2026 22:08:18 +0000
+Description: COREI OS packages (edge)
+Label: COREI OS
+Origin: COREI OS
+Suite: edge
+MD5Sum:
+ d0ec2bcd8ebac2ca0bd579ae0214089c              174 Release
+ 7cd80d882e543d4749cd51ad83ecaf39             8362 main/binary-amd64/Packages
+ 7a5f241996f322bbd06834ceb78978ce             2594 main/binary-amd64/Packages.gz
+SHA1:
+ c3a39aa1c228ed23210e51f6597ab6ce25961e52              174 Release
+ 04b9cc003b668fd95206ef0b7d8f56a87220a211             8362 main/binary-amd64/Packages
+ 464b7cf37acb2deae8236cce4fcc1ad2845f7edd             2594 main/binary-amd64/Packages.gz
+SHA256:
+ 5964ba1294aa3b0b990eed6f48179eecacf68f249b311d1bfef827c9f0ab18e3              174 Release
+ 1fea928bf332362a29fb9a0e1d1a796a2561b9f1c2252681ec255cb70132b989             8362 main/binary-amd64/Packages
+ 9d9f5248d33ab5370d5722b6c77eecf0348493795813c0b116162229b246131f             2594 main/binary-amd64/Packages.gz
+SHA512:
+ 3b0a53974d8804ec27e39b9faa6e01258574ad9f60918ca9aa2312e41845b838a3fce2f5f55f98d0642541b8e197e1860a81b54da60de257966f179e8e26b980              174 Release
+ e4702e320eaaf617cc56e21fceb938fedda9b46fcacb80e9ffaf879f138aaeb0d5e1e71aca63636cf97de79ece1c09bee9c57a4b37a7cec1dc119ad6ab758e46             8362 main/binary-amd64/Packages
+ 26bb15a969a21a7ddb761a71786f200aa7f45e91c27b571b57bd1280cba8722960260ea5f0e5bb43567cefc0d9d7877116fbe7b41b13e78b735810673d8c456f             2594 main/binary-amd64/Packages.gz
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQRNf26IBhKfF2Idm5f1CngqZJvmMQUCaukJ0gAKCRD1CngqZJvm
+MUHdAP4/TdrduIe3Ly2sLqVyKvqQxHvhJtiMq0xglsfB6gBiqwEAxNxP2HwWERGQ
+HYqpxGB6dvlxLpQE5RR2igUotalH1AU=
+=tZhQ
+-----END PGP SIGNATURE-----
