@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[2]
 REGISTER: list[dict[str, Any]] = yaml.safe_load((ROOT / "docs/findings/register.yaml").read_text())
 STATUSES = {"covered", "partial", "pending", "process"}
 DELIVERIES = set("ABCDEFGHI")
+DONE = set("AB")  # deliveries completed in this repository
 CRITICAL = {f"F{i:02d}" for i in range(1, 7)}
 MEDIUM = {"F37", "F38"}
 
@@ -48,7 +49,7 @@ def test_register_is_complete_and_consistent() -> None:
         if f["status"] == "process":
             assert f.get("action"), f"{f['id']} needs the manual action spelled out"
         if f["status"] == "covered":
-            assert f["delivery"] == "A", f"{f['id']} covered outside Delivery A?"
+            assert f["delivery"] in DONE, f"{f['id']} covered by an unfinished delivery?"
 
 
 @pytest.mark.parametrize(

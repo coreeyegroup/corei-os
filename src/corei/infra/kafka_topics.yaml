@@ -1,0 +1,56 @@
+# One declared Kafka topology for every environment (F44, F45).
+# Topic name = corei.<COREI_ENV>.<family>. Every registered event type maps to exactly one family
+# (enforced by tests). Message key = the envelope's partition_key, so per-key order is preserved.
+# Compacted topics are read models only, never the source of truth for money (C12).
+
+defaults:
+  partitions: 6
+  replication_factor: 1      # raise per environment; single-node dev/CI cluster uses 1
+  retention_ms: 604800000    # 7 days
+  cleanup_policy: delete
+
+families:
+  reference.instruments:
+    event_types: [reference.instrument]
+    partitions: 1
+    cleanup_policy: compact
+  market.observations:
+    event_types: [market.quote, market.trade, market.index, market.status]
+  market.quarantine:
+    event_types: [market.quarantine]
+    partitions: 1
+    retention_ms: 2592000000  # 30 days: evidence of refused input
+  market.candles:
+    event_types: [market.candle]
+  market.features:
+    event_types: [market.feature]
+  market.state:
+    event_types: [market.state]
+    cleanup_policy: compact
+  strategy.signals:
+    event_types: [strategy.signal]
+  trade.intents:
+    event_types: [trade.intent]
+  pretrade.decisions:
+    event_types: [risk.decision, policy.decision]
+  orders.commands:
+    event_types: [order.command]
+  orders.lifecycle:
+    event_types: [order.lifecycle]
+  orders.fills:
+    event_types: [order.fill]
+    retention_ms: -1          # fills are kept indefinitely (also journaled in Postgres)
+  portfolio.snapshots:
+    event_types: [portfolio.snapshot]
+    cleanup_policy: compact
+  control.state:
+    event_types: [control.state]
+    partitions: 1
+    cleanup_policy: compact
+  control.commands:
+    event_types: [control.command]
+    partitions: 1
+    retention_ms: -1
+  recon.breaks:
+    event_types: [recon.break]
+    retention_ms: -1

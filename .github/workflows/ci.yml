@@ -15,7 +15,36 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: corei
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: corei
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U corei" --health-interval 5s --health-timeout 5s --health-retries 20
+      kafka:
+        image: apache/kafka:3.8.1
+        env:
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: broker,controller
+          KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+          KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+          KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+        ports: ["9092:9092"]
+    env:
+      COREI_REQUIRE_INTEGRATION: "1"
+      COREI_TEST_DATABASE_URL: postgresql://corei:ci-only@localhost:5432/corei
+      COREI_TEST_KAFKA_BOOTSTRAP: localhost:9092
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,5 +87,31 @@ jobs:
           uv run python scripts/export_schemas.py --check
           uv run python scripts/make_vectors.py --check
 
-      - name: Tests (unit, contract, acceptance register)
+      - name: Wait for Kafka
+        run: |
+          uv run python - <<'PY'
+          import time
+          from confluent_kafka.admin import AdminClient
+          admin = AdminClient({"bootstrap.servers": "localhost:9092"})
+          for _ in range(60):
+              try:
+                  admin.list_topics(timeout=2); print("kafka ready"); break
+              except Exception:
+                  time.sleep(2)
+          else:
+              raise SystemExit("kafka did not start")
+          PY
+
+      - name: Tests (unit, contract, integration with Postgres and Kafka, acceptance register)
         run: uv run pytest -ra
+
+      - name: Smoke - declare topology and bootstrap PAPER twice (idempotent)
+        env:
+          COREI_ENV: ci
+          DATABASE_URL: postgresql://corei:ci-only@localhost:5432/corei
+          KAFKA_BOOTSTRAP: localhost:9092
+        run: |
+          uv run python scripts/kafka_topology.py --bootstrap localhost:9092 --env ci --apply
+          uv run python -m corei.bootstrap config/paper-bootstrap.yaml
+          uv run python -m corei.bootstrap config/paper-bootstrap.yaml | tee /tmp/second.txt
+          grep -q "'seeded': False" /tmp/second.txt

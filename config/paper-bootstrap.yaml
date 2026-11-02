@@ -1,0 +1,18 @@
+# PAPER environment bootstrap: two paper accounts (first vertical slice).
+# seed_cash is a decimal string in the account currency. Change seed_id to add another deposit.
+mode: PAPER
+accounts:
+  - account_id: acc_paper_a
+    portfolio_id: pf_paper_a
+    broker: paper
+    currency: INR
+    currency_scale: 2
+    seed_cash: "1000000.00"
+    seed_id: 1
+  - account_id: acc_paper_b
+    portfolio_id: pf_paper_b
+    broker: paper
+    currency: INR
+    currency_scale: 2
+    seed_cash: "500000.00"
+    seed_id: 1

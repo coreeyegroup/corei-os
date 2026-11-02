@@ -11,9 +11,9 @@ corrections C01–C13) together with the assessment's findings **F01–F50**.
 
 | Delivery | Scope | State |
 | --- | --- | --- |
-| **A — Baseline and contracts** | Source disposition, secret inventory, canonical contracts, units/time/identity rules, CI | **This commit** |
-| B — Minimal runtime and controls | Migrations, Kafka topology, authenticated commands, PAPER mode, durable halt, ledger seed, reservations | Next |
-| C — Data and research foundations | Simulator/replay, observations, candles, per-key features | — |
+| A — Baseline and contracts | Source disposition, secret inventory, canonical contracts, units/time/identity rules, CI | Done |
+| **B — Minimal runtime and controls** | Migrations, inbox/outbox processing, Kafka topology, authenticated control API, PAPER mode, durable halts, ledger, reservations | **Done** |
+| C — Data and research foundations | Simulator/replay, observations, candles, per-key features | Next |
 | D — Complete paper loop | Strategy → intent → risk/policy/sizing/reservation → OMS → paper broker → ledger → reconciliation | — |
 | E–I | Safety qualification, live-data paper, deployment, limited live, expansion | — |
 
@@ -25,6 +25,11 @@ separately authorized step (Delivery H).
 ```
 src/corei/domain/      pure rules: units, time, identity, order/control/reconciliation state machines
 src/corei/contracts/   canonical event and command contracts (single source of truth)
+src/corei/infra/       settings, Postgres + migrations, inbox/outbox processor, Kafka transport and topology
+src/corei/ledger/      cash, positions, fills (applied once), capital reservations
+src/corei/control/     durable modes and scoped halts, token auth and roles
+src/corei/api/         operator API: control commands, state, portfolio, health/readiness
+config/                PAPER bootstrap (two paper accounts)
 contracts/schemas/     language-neutral JSON Schemas exported from the contracts (generated)
 contracts/vectors/     valid/invalid example events every producer and consumer must agree on
 docs/findings/         F01–F50 register: status, delivery, gate and the tests that cover each
@@ -36,6 +41,14 @@ tests/                 unit, contract and acceptance tests
 ## Working
 
 ```bash
+docker compose up -d                       # local Postgres 16 + Kafka (KRaft)
+export COREI_ENV=dev DATABASE_URL=postgresql://corei:corei@localhost:5432/corei KAFKA_BOOTSTRAP=localhost:9092
+uv run python scripts/kafka_topology.py --bootstrap localhost:9092 --env dev --apply
+uv run python -m corei.bootstrap config/paper-bootstrap.yaml   # migrate, PAPER mode, seed 2 accounts
+
+# integration tests need a Postgres where the user may create databases
+export COREI_TEST_DATABASE_URL=postgresql://corei:corei@localhost:5432/corei COREI_TEST_KAFKA_BOOTSTRAP=localhost:9092
+
 make sync            # uv sync --frozen (Python >= 3.12)
 make check           # lint, mypy, tests, schema drift, repo hygiene — same as CI
 make schemas         # regenerate JSON Schemas after changing a contract

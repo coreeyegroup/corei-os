@@ -32,27 +32,35 @@
 - id: F04
   severity: critical
   title: Risk uses simulated state
-  gate: R5
-  delivery: B
+  gate: R8
+  delivery: D
   status: partial
-  tests: ["tests/contract/test_vectors.py::test_invalid_vector_is_refused[risk_reject_without_reason]"]
+  note: B delivers real portfolio state, versioning and atomic reservations; the risk evaluator is D
+  tests:
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[risk_reject_without_reason]"
+    - tests/integration/test_db_and_ledger.py::test_parallel_reservations_never_exceed_capital_f04
+    - tests/integration/test_db_and_ledger.py::test_reservation_refuses_stale_portfolio_version_and_wrong_mode
 - id: F05
   severity: critical
   title: Kill switch acknowledges without enforcing
   gate: R10
-  delivery: B
+  delivery: D
   status: partial
+  note: B makes halts durable, authenticated and fenced; enforcement at OMS dispatch and cancel acks are D/E
   tests:
     - tests/unit/test_control_and_recon.py::test_fail_closed_when_control_state_missing_c08
-    - tests/unit/test_control_and_recon.py::test_halt_blocks_new_risk_but_allows_reducing_orders_c03
     - tests/unit/test_control_and_recon.py::test_fence_detects_halt_between_reservation_and_dispatch
+    - tests/integration/test_control_and_api.py::test_halt_survives_restart_and_blocks_only_new_risk
+    - tests/integration/test_control_and_api.py::test_command_authorization_versioning_and_idempotency
 - id: F06
   severity: critical
   title: Broker dispatch route bypasses reviewed controls
   gate: R8
   delivery: D
   status: partial
-  tests: ["tests/contract/test_vectors.py::test_invalid_vector_is_refused[command_mode_off]"]
+  tests:
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[command_mode_off]"
+    - tests/integration/test_control_and_api.py::test_no_endpoint_accepts_raw_orders_f06
 - id: F07
   severity: high
   title: Provider registry shares account session objects
@@ -89,8 +97,13 @@
   title: Kafka order is not instrument scoped
   gate: R2
   delivery: B
-  status: partial
-  tests: ["tests/contract/test_vectors.py::test_invalid_vector_is_refused[envelope_wrong_partition_key]"]
+  status: covered
+  tests:
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[envelope_wrong_partition_key]"
+    - tests/integration/test_processing.py::test_redelivery_applies_once_and_emits_one_snapshot
+    - tests/integration/test_processing.py::test_crash_inside_handler_leaves_no_trace_and_redelivery_applies
+    - tests/integration/test_processing.py::test_outbox_relay_end_to_end_with_broker_failure_and_duplicate_publish
+    - tests/integration/test_kafka.py::test_outbox_to_kafka_to_ledger_applies_once
 - id: F13
   severity: high
   title: Mixed instruments contaminate features
@@ -164,15 +177,22 @@
   gate: R5
   delivery: D
   status: partial
+  note: B applies fills transactionally and once; producing them from broker executions is D
   tests:
     - tests/unit/test_orders.py::test_duplicate_fill_applies_once_f21_f22
-    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[fill_without_execution_id]"
+    - tests/integration/test_db_and_ledger.py::test_duplicate_fill_changes_state_once_f21_f22
+    - tests/integration/test_processing.py::test_fill_conflict_is_rejected_for_reconciliation
 - id: F22
   severity: high
   title: Portfolio engine cannot own institutional state
   gate: R5
   delivery: B
-  status: pending
+  status: covered
+  tests:
+    - tests/unit/test_positions.py::test_property_money_is_conserved_exactly
+    - tests/integration/test_db_and_ledger.py::test_property_ledger_conserves_cash
+    - tests/integration/test_db_and_ledger.py::test_accounts_are_isolated_f03
+    - tests/integration/test_db_and_ledger.py::test_journal_and_fills_are_append_only
 - id: F23
   severity: high
   title: Reconciliation has false match and false break paths
@@ -257,13 +277,19 @@
   title: Competing database definitions
   gate: R2
   delivery: B
-  status: pending
+  status: covered
+  tests:
+    - tests/integration/test_db_and_ledger.py::test_migrations_are_idempotent_and_at_head
+    - tests/integration/test_db_and_ledger.py::test_modified_migration_is_refused
 - id: F36
   severity: high
   title: Health endpoints establish process life only
   gate: R2
   delivery: B
-  status: pending
+  status: covered
+  tests:
+    - tests/integration/test_control_and_api.py::test_fresh_system_is_fail_closed_and_not_ready
+    - tests/integration/test_control_and_api.py::test_bootstrap_is_idempotent_and_enables_paper
 - id: F37
   severity: medium
   title: Ambiguous source and dependency layout
@@ -310,21 +336,27 @@
 - id: F43
   severity: high
   title: Tick migration cannot satisfy the persistence query
-  gate: R2
-  delivery: B
+  gate: R3
+  delivery: C
   status: pending
+  note: market-data tables arrive with the observation store in C, in the same migration lineage
 - id: F44
   severity: high
   title: Event clients name different Kafka namespaces
   gate: R2
   delivery: B
-  status: pending
+  status: covered
+  tests:
+    - tests/unit/test_infra.py::test_settings_require_explicit_endpoints
+    - tests/unit/test_infra.py::test_every_event_type_has_exactly_one_topic
 - id: F45
   severity: high
   title: Stage-14 topic setup reports registration without creating topics
   gate: R2
   delivery: B
-  status: pending
+  status: covered
+  tests:
+    - tests/integration/test_kafka.py::test_topology_matches_declaration
 - id: F46
   severity: high
   title: Planned strategy plugins are empty
