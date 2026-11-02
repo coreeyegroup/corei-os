@@ -19,7 +19,9 @@ DIST=${DIST:-$ROOT/dist}
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 KAFKA_VERSION=${KAFKA_VERSION:-3.8.1}
-KAFKA_DEB_VERSION="${KAFKA_VERSION}-1corei1"
+# Bump the revision whenever anything under packaging/corei-kafka changes; apt only
+# delivers a package to users when its version increases.
+KAFKA_DEB_VERSION="${KAFKA_VERSION}-2corei1"
 PYTHON_VERSION=${PYTHON_VERSION:-3.12}
 APP=/opt/corei-os
 
@@ -39,6 +41,7 @@ fi
 VERSION=${VERSION_OVERRIDE:-$VERSION}
 echo "build-debs: corei-os $VERSION"
 mkdir -p "$DIST"
+export SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH:-$(git log -1 --format=%ct)}
 
 finish() { # $1 = staging root, $2 = package dir, $3 = version, $4 = output name
     local stage=$1 pkgdir=$2 ver=$3 out=$4 size
@@ -49,6 +52,8 @@ finish() { # $1 = staging root, $2 = package dir, $3 = version, $4 = output name
         if [ -f "$pkgdir/$f" ]; then install -m "$([ "$f" = conffiles ] && echo 644 || echo 755)" "$pkgdir/$f" "$stage/DEBIAN/$f"; fi
     done
     (cd "$stage" && find . -type f ! -path './DEBIAN/*' -printf '%P\0' | sort -z | xargs -0 md5sum > DEBIAN/md5sums)
+    # Reproducible: identical inputs give a byte-identical package (times from the commit).
+    find "$stage" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
     dpkg-deb --root-owner-group -Zxz --build "$stage" "$DIST/$out" >/dev/null
     echo "build-debs: $DIST/$out"
 }
@@ -56,8 +61,8 @@ finish() { # $1 = staging root, $2 = package dir, $3 = version, $4 = output name
 doc() { # $1 = stage, $2 = package
     install -d "$1/usr/share/doc/$2"
     printf 'COREI OS (%s)\nSource: https://github.com/coreeyegroup/corei-os\n' "$2" > "$1/usr/share/doc/$2/copyright"
-    printf '%s (%s) noble; urgency=medium\n\n  * Build of commit %s.\n\n -- COREI OS <noreply@coreeyegroup.github.io>  %s\n' \
-        "$2" "$3" "$(git rev-parse --short=12 HEAD)" "$(date -R)" | gzip -9n > "$1/usr/share/doc/$2/changelog.gz"
+    printf '%s (%s) noble; urgency=medium\n\n  * %s.\n\n -- COREI OS <noreply@coreeyegroup.github.io>  %s\n' \
+        "$2" "$3" "${4:-Build of commit $(git rev-parse --short=12 HEAD)}" "$(date -R -u -d "@$SOURCE_DATE_EPOCH")" | gzip -9n > "$1/usr/share/doc/$2/changelog.gz"
 }
 
 # ---------------------------------------------------------------- corei-os
@@ -81,11 +86,19 @@ uv export --quiet --frozen --no-dev --no-emit-project --format requirements-txt 
 uv pip install --quiet --python "$APP/venv/bin/python" --require-hashes -r "$WORK/requirements.txt"
 uv build --quiet --wheel --out-dir "$WORK/wheel"
 uv pip install --quiet --python "$APP/venv/bin/python" --no-deps "$WORK"/wheel/*.whl
-"$APP/venv/bin/python" -m compileall -q "$APP/venv" >/dev/null || true
 rm -f "$APP/venv/.lock" "$APP/venv/.gitignore" "$APP/venv/CACHEDIR.TAG"
+# Install metadata that records the temporary build path and time; not needed at run time.
+for info in "$APP"/venv/lib/python3.*/site-packages/*.dist-info; do
+    rm -f "$info/direct_url.json" "$info/uv_cache.json"
+    [ -f "$info/RECORD" ] && sed -i -e '/\/direct_url\.json,/d' -e '/\/uv_cache\.json,/d' "$info/RECORD"
+done
 printf '%s\n' "$VERSION" > "$APP/VERSION"
 printf '%s\n' "$(git rev-parse HEAD)" > "$APP/COMMIT"
-"$APP/venv/bin/corei-os" version | grep -qxF "$VERSION" || { echo "build-debs: installed version mismatch"; exit 1; }
+PYTHONDONTWRITEBYTECODE=1 "$APP/venv/bin/corei-os" version | grep -qxF "$VERSION" || { echo "build-debs: installed version mismatch"; exit 1; }
+# Byte-compile last, from a clean slate, with hash-based .pyc files (no timestamps inside),
+# so two builds of the same commit are byte-identical.
+find "$APP" -name __pycache__ -type d -prune -exec rm -rf {} +
+"$APP/venv/bin/python" -B -m compileall -q -f --invalidation-mode unchecked-hash "$APP" >/dev/null || true
 install -d "$S/opt"
 cp -a "$APP" "$S/opt/"
 rm -rf "$APP"
@@ -113,7 +126,7 @@ if [ -n "${KAFKA_SHA512:-}" ]; then
     install -m 0755 "$PKG/corei-kafka/fetch-kafka" "$S/usr/lib/corei-kafka/fetch-kafka"
     printf '%s\n' "$KAFKA_VERSION" > "$S/usr/share/corei-kafka/kafka-version"
     printf '%s\n' "$KAFKA_SHA512" > "$S/usr/share/corei-kafka/kafka.sha512"
-    doc "$S" corei-kafka "$KAFKA_DEB_VERSION"
+    doc "$S" corei-kafka "$KAFKA_DEB_VERSION" "packaging revision $KAFKA_DEB_VERSION"
     finish "$S" "$PKG/corei-kafka" "$KAFKA_DEB_VERSION" "corei-kafka_${KAFKA_DEB_VERSION}_all.deb"
 else
     echo "build-debs: KAFKA_SHA512 not set; corei-kafka not built"

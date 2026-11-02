@@ -29,7 +29,13 @@ PostgreSQL came from Docker Compose.
    - `stable`: `v*` tags.
 
    Indexes are signed with an ed25519 key held only as the `APT_SIGNING_KEY` secret. Release files carry `Origin: COREI OS`, so `unattended-upgrades` can be limited to this repository (`corei-os auto-update on`, off by default).
-9. **Evidence:**
+9. **Reproducible builds and versions.** Building the same commit twice gives byte-identical packages:
+   - file times come from the commit time (`SOURCE_DATE_EPOCH`);
+   - `.pyc` files are hash-based;
+   - install metadata that records the build path is dropped.
+
+   `corei-kafka` has its own packaging revision (`3.8.1-NcoreiM`), bumped whenever `packaging/corei-kafka` changes. That way apt never sees the same version with different contents, which it would report as a downgrade. Added 3 Nov 2026 after the upgrade test caught exactly that.
+10. **Evidence:**
    - **Every pull request:** builds the packages and runs `packaging/test/install-test.sh` on fresh Ubuntu 22.04 and 24.04 runners with systemd. It covers install, readiness, an authenticated halt published through the relay to Kafka, and an upgrade that must back up and keep data, configuration and the halt. It also covers the auto-update switch and purge.
    - **After publishing:** installs from the public repository exactly as a user would.
 
