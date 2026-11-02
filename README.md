@@ -1,4 +1,4 @@
-# COREI platform
+# COREI OS
 
 Clean rebuild of the COREI trading platform. The legacy repository
 (`coreeyegroup/corei` at `a08758dc3`) is preserved read-only as evidence; no

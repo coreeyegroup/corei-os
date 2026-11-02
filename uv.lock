@@ -98,7 +98,7 @@ wheels = [
 ]
 
 [[package]]
-name = "corei"
+name = "corei-os"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

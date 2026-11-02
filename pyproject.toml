@@ -1,5 +1,5 @@
 [project]
-name = "corei"
+name = "corei-os"
 version = "0.1.0"
 description = "COREI trading platform — clean rebuild (Delivery A: contracts and foundation)"
 readme = "README.md"
