@@ -14,6 +14,25 @@ families:
     event_types: [reference.instrument]
     partitions: 1
     cleanup_policy: compact
+  reference.entities:
+    event_types: [reference.entity]
+    partitions: 1
+    cleanup_policy: compact
+  reference.brokers:
+    event_types: [reference.broker]
+    partitions: 1
+    cleanup_policy: compact
+  reference.accounts:
+    event_types: [reference.account]
+    partitions: 1
+    cleanup_policy: compact
+  reference.account_groups:
+    event_types: [reference.account_group]
+    partitions: 1
+    cleanup_policy: compact
+  market.fx_rates:
+    event_types: [market.fx_rate]
+    retention_ms: -1          # valuation evidence: keep every rate used
   market.observations:
     event_types: [market.quote, market.trade, market.index, market.status]
   market.quarantine:

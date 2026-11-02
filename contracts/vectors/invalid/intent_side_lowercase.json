@@ -4,13 +4,14 @@
   "finding": "F17",
   "payload": {
     "allowed_accounts": [
-      "acc_paper_a",
-      "acc_paper_b"
+      "acc_us_paper_01",
+      "acc_uk_paper_01",
+      "acc_ae_paper_01"
     ],
     "as_of_ns": 1788000060000000000,
     "capital_partition": "core",
     "expires_at_ns": 1788000120000000000,
-    "instrument_id": "ins_test_fut_a",
+    "instrument_id": "ins_eurusd",
     "intent_id": "int_001",
     "origin": "CORE",
     "purpose": "OPEN",
@@ -18,8 +19,8 @@
     "signal_ids": [
       "sig_001"
     ],
-    "source_ref": "ema_cross",
-    "strategy_id": "ema_cross",
+    "source_ref": "forex-momentum-strategy",
+    "strategy_id": "forex-momentum-strategy",
     "strategy_version": "1.0.0"
   }
 }

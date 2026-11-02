@@ -13,8 +13,8 @@
     },
     "ExecutionMode": {
       "enum": [
-        "OFF",
-        "SIMULATION",
+        "DISABLED",
+        "BACKTEST",
         "PAPER",
         "LIVE_SEMI",
         "LIVE_AUTO"

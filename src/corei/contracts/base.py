@@ -36,7 +36,7 @@ Scaled = Annotated[int, Field(ge=-(10**30), le=10**30)]
 NonNegScaled = Annotated[int, Field(ge=0, le=10**30)]
 PosScaled = Annotated[int, Field(gt=0, le=10**30)]
 Scale = Annotated[int, Field(ge=0, le=18)]
-Currency = Annotated[str, Field(pattern=r"^[A-Z]{3}$")]
+Currency = Annotated[str, Field(pattern=r"^[A-Z][A-Z0-9]{2,5}$")]  # ISO 4217 or registered crypto
 Bps = Annotated[int, Field(ge=0, le=10_000)]
 Sha256Hex = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 Version = Annotated[int, Field(ge=0)]

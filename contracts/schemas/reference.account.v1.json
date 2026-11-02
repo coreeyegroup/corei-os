@@ -1,0 +1,121 @@
+{
+  "$defs": {
+    "BrokerBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "broker_account_ref": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Broker Account Ref",
+          "type": "string"
+        },
+        "broker_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "title": "Broker Id",
+          "type": "string"
+        },
+        "credential_ref": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Credential Ref"
+        },
+        "rank": {
+          "maximum": 3,
+          "minimum": 1,
+          "title": "Rank",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "broker_id",
+        "rank",
+        "broker_account_ref"
+      ],
+      "title": "BrokerBinding",
+      "type": "object"
+    },
+    "LedgerKind": {
+      "description": "Where an account's money lives. Fixed for the account's life.",
+      "enum": [
+        "BACKTEST",
+        "PAPER",
+        "LIVE"
+      ],
+      "title": "LedgerKind",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/reference.account.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "account_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Account Id",
+      "type": "string"
+    },
+    "base_currency": {
+      "pattern": "^[A-Z][A-Z0-9]{2,5}$",
+      "title": "Base Currency",
+      "type": "string"
+    },
+    "bindings": {
+      "items": {
+        "$ref": "#/$defs/BrokerBinding"
+      },
+      "maxItems": 3,
+      "minItems": 1,
+      "title": "Bindings",
+      "type": "array"
+    },
+    "entity_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Entity Id",
+      "type": "string"
+    },
+    "ledger_kind": {
+      "$ref": "#/$defs/LedgerKind"
+    },
+    "portfolio_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Portfolio Id",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "minimum": 0,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "account_id",
+    "portfolio_id",
+    "entity_id",
+    "ledger_kind",
+    "base_currency",
+    "bindings"
+  ],
+  "title": "AccountSpec",
+  "type": "object",
+  "x-corei-event-type": "reference.account",
+  "x-corei-schema-version": 1
+}

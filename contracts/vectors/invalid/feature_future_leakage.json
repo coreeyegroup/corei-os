@@ -6,12 +6,12 @@
     "as_of_ns": 1788000060000000000,
     "dataset_version": "ds_obs_v1",
     "feature_name": "ema",
-    "feature_version": "ema_close_n10_v1",
+    "feature_version": "ema_mid_n20_v1",
     "inputs_cutoff_ns": 1788000061000000000,
-    "instrument_id": "ins_test_fut_a",
+    "instrument_id": "ins_eurusd",
     "timeframe": "1m",
-    "value_scale": 2,
-    "value_units": 2350210,
+    "value_scale": 5,
+    "value_units": 108244,
     "warm": true
   }
 }

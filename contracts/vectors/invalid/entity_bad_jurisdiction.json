@@ -1,0 +1,15 @@
+{
+  "event_type": "reference.entity",
+  "expect_error": "jurisdiction",
+  "finding": "C04",
+  "payload": {
+    "active": true,
+    "base_currency": "USD",
+    "entity_id": "ent_us",
+    "jurisdiction": "Dubai",
+    "name": "COREI US (paper)",
+    "regulator": "NFA/CFTC",
+    "reporting_timezone": "America/New_York",
+    "version": 1
+  }
+}

@@ -2,8 +2,8 @@
   "$defs": {
     "ExecutionMode": {
       "enum": [
-        "OFF",
-        "SIMULATION",
+        "DISABLED",
+        "BACKTEST",
         "PAPER",
         "LIVE_SEMI",
         "LIVE_AUTO"
@@ -32,7 +32,14 @@
       "type": "boolean"
     },
     "mode": {
-      "$ref": "#/$defs/ExecutionMode"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ExecutionMode"
+        },
+        {
+          "type": "null"
+        }
+      ]
     },
     "scope": {
       "maxLength": 128,

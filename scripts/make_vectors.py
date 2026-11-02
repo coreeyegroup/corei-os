@@ -1,8 +1,8 @@
 """Generate contract test vectors (valid + invalid) into contracts/vectors/.
 
-Vectors follow the first vertical slice: two instruments, two paper accounts.
-Instrument parameters are TEST FIXTURES, not real exchange specifications —
-real lot sizes, ticks and expiries come from reference data (C05).
+Scenario: international forex, first vertical slice — EURUSD on the COREI paper
+broker, accounts under US, UK and UAE legal entities. Values are fixtures, not
+market data; real instrument specifications come from each broker's reference data.
 
     uv run python scripts/make_vectors.py           # regenerate
     uv run python scripts/make_vectors.py --check   # CI: fail on drift
@@ -31,8 +31,10 @@ from corei.domain.reconciliation import BreakState
 ROOT = Path(__file__).resolve().parents[1] / "contracts" / "vectors"
 T0 = 1_788_000_000_000_000_000  # fixed epoch-ns anchor; vectors never use the wall clock
 SEC = 1_000_000_000
-RAW = canonical_hash("raw.evidence", {"fixture": "upstox-v3-frame-001"})
+RAW = canonical_hash("raw.evidence", {"fixture": "fx-feed-frame-001"})
 PAPER = ExecutionMode.PAPER
+FEED = "brk_paper"
+ACC = "acc_us_paper_01"
 
 
 def envelope(
@@ -46,125 +48,156 @@ def envelope(
         occurred_at_ns=at,
         recorded_at_ns=at + 1_000,
         producer="vector-generator",
-        producer_version="0.1.0",
+        producer_version="0.2.0",
         correlation_id="cor_slice_001",
         causation_id=cause,
     )
 
 
-def valid() -> dict[str, EventEnvelope]:
-    fut = rf.InstrumentSpec(
-        instrument_id="ins_test_fut_a",
+def eurusd() -> rf.InstrumentSpec:
+    return rf.InstrumentSpec(
+        instrument_id="ins_eurusd",
         version=1,
-        venue="TESTX",
-        symbol="TEST-A-FUT",
-        kind=rf.InstrumentKind.FUTURE,
+        asset_class=rf.AssetClass.FX,
+        kind=rf.InstrumentKind.SPOT,
+        venue="OTC",
+        symbol="EURUSD",
         tradable=True,
-        underlying_id="ins_test_idx_a",
-        expiry_ns=T0 + 30 * 86_400 * SEC,
-        price_scale=2,
-        tick_size_units=5,
-        quantity_scale=0,
-        quantity_step_units=25,
-        min_quantity_units=25,
-        contract_multiplier_units=1,
+        base_currency="EUR",
+        quote_currency="USD",
+        pip_size_units=10,
+        price_scale=5,
+        tick_size_units=1,
+        quantity_scale=2,
+        quantity_step_units=1,
+        min_quantity_units=1,
+        contract_multiplier_units=100_000,
         multiplier_scale=0,
-        settlement_currency="INR",
+        settlement_currency="USD",
         currency_scale=2,
-        provider_keys={"upstox": "TEST_FO|00001"},
+        session_calendar="fx-24x5",
+        provider_keys={FEED: "EURUSD"},
         valid_from_ns=T0,
     )
-    quote = mk.QuoteObservation(
+
+
+def valid() -> dict[str, EventEnvelope]:
+    ins = eurusd()
+    entity = rf.LegalEntity(
+        entity_id="ent_us",
+        name="COREI US (paper)",
+        jurisdiction="US",
+        regulator="NFA/CFTC",
+        base_currency="USD",
+        reporting_timezone="America/New_York",
+    )
+    broker = rf.BrokerSpec(
+        broker_id=FEED,
+        name="COREI paper broker",
+        platform=rf.BrokerPlatform.PAPER,
+        jurisdictions=("US", "GB", "AE"),
+        asset_classes=(rf.AssetClass.FX, rf.AssetClass.METAL),
+        order_types=(rf.OrderTypeCapability.MARKET, rf.OrderTypeCapability.LIMIT),
+        position_model=rf.PositionModel.NETTING,
+    )
+    account = rf.AccountSpec(
+        account_id=ACC,
+        portfolio_id="pf_us_paper_01",
+        entity_id="ent_us",
+        ledger_kind=rf.LedgerKind.PAPER,
+        base_currency="USD",
+        bindings=(rf.BrokerBinding(broker_id=FEED, rank=1, broker_account_ref="PAPER-US-01"),),
+    )
+    group = rf.AccountGroup(
+        group_id="grp_forex_swing",
+        name="Forex swing (paper)",
+        account_ids=(ACC, "acc_uk_paper_01", "acc_ae_paper_01"),
+        strategy_ids=("forex-momentum-strategy",),
+    )
+    rate = rf.FxRateSnapshot(
+        base_currency="GBP",
+        quote_currency="USD",
+        rate_units=127_500,
+        rate_scale=5,
+        as_of_ns=T0,
+        source=FEED,
+    )
+    obs = dict(
         observation_id="obs_q_001",
-        provider="upstox",
+        provider=FEED,
         feed_session_id="fs_001",
-        instrument_id=fut.instrument_id,
+        instrument_id=ins.instrument_id,
         origin=mk.DataOrigin.OBSERVED,
         provider_ts_ns=T0,
         receive_ts_ns=T0 + 2_000_000,
-        provider_sequence=101,
-        price_scale=2,
-        bid_units=2_350_010,
-        bid_size_units=75,
-        ask_units=2_350_030,
-        ask_size_units=50,
+        price_scale=5,
         raw_evidence_hash=RAW,
+    )
+    quote = mk.QuoteObservation(
+        **obs | {"provider_sequence": 101},
+        bid_units=108_250,  # type: ignore[arg-type]
+        bid_size_units=500,
+        ask_units=108_252,
+        ask_size_units=300,
+        size_scale=2,
     )
     trade = mk.TradeObservation(
-        observation_id="obs_t_001",
-        provider="upstox",
-        feed_session_id="fs_001",
-        instrument_id=fut.instrument_id,
-        origin=mk.DataOrigin.OBSERVED,
-        provider_ts_ns=T0,
-        receive_ts_ns=T0 + 2_000_000,
-        price_scale=2,
-        price_units=2_350_020,
-        size_units=25,
-        raw_evidence_hash=RAW,
+        **obs | {"observation_id": "obs_t_001"},
+        price_units=108_251,  # type: ignore[arg-type]
+        size_units=100,
+        size_scale=2,
     )
     index = mk.IndexObservation(
-        observation_id="obs_i_001",
-        provider="upstox",
-        feed_session_id="fs_001",
-        instrument_id="ins_test_idx_a",
-        origin=mk.DataOrigin.OBSERVED,
-        provider_ts_ns=T0,
-        receive_ts_ns=T0 + 2_000_000,
-        price_scale=2,
-        value_units=2_349_500,
-        raw_evidence_hash=RAW,
+        **obs
+        | {
+            "observation_id": "obs_i_001",
+            "instrument_id": "ins_dxy",  # type: ignore[arg-type]
+            "price_scale": 3,
+        },
+        value_units=104_125,
     )
     status = mk.StatusObservation(
-        observation_id="obs_s_001",
-        provider="upstox",
-        feed_session_id="fs_001",
-        instrument_id=fut.instrument_id,
-        origin=mk.DataOrigin.OBSERVED,
-        provider_ts_ns=T0,
-        receive_ts_ns=T0 + 1_000,
-        price_scale=2,
+        **obs | {"observation_id": "obs_s_001"},  # type: ignore[arg-type]
         session_status=mk.SessionStatus.OPEN,
-        raw_evidence_hash=RAW,
     )
     quarantine = mk.QuarantineRecord(
         observation_id="obs_q_bad",
-        instrument_id=fut.instrument_id,
-        provider="upstox",
+        instrument_id=ins.instrument_id,
+        provider=FEED,
         receive_ts_ns=T0 + 3_000_000,
         reason_code="CROSSED_BOOK",
         raw_evidence_hash=RAW,
     )
     candle = mk.Candle(
-        instrument_id=fut.instrument_id,
+        instrument_id=ins.instrument_id,
         timeframe="1m",
         start_ns=T0,
         end_ns=T0 + 60 * SEC,
-        price_source="TRADE",
-        price_scale=2,
-        open_units=2_350_020,
-        high_units=2_351_000,
-        low_units=2_349_000,
-        close_units=2_350_500,
-        traded_volume_units=1_200,
-        observation_count=48,
+        price_source="MID",
+        price_scale=5,
+        open_units=108_250,
+        high_units=108_290,
+        low_units=108_231,
+        close_units=108_270,
+        traded_volume_units=None,
+        observation_count=118,
         complete=True,
         dataset_version="ds_obs_v1",
     )
     feature = mk.FeatureValue(
-        instrument_id=fut.instrument_id,
+        instrument_id=ins.instrument_id,
         timeframe="1m",
         feature_name="ema",
-        feature_version="ema_close_n10_v1",
+        feature_version="ema_mid_n20_v1",
         as_of_ns=T0 + 60 * SEC,
         inputs_cutoff_ns=T0 + 60 * SEC,
-        value_units=2_350_210,
-        value_scale=2,
+        value_units=108_244,
+        value_scale=5,
         warm=True,
         dataset_version="ds_obs_v1",
     )
     mstate = mk.MarketState(
-        instrument_id=fut.instrument_id,
+        instrument_id=ins.instrument_id,
         as_of_ns=T0 + 60 * SEC,
         watermark_ns=T0 + 60 * SEC,
         last_observation_ns=T0 + 59 * SEC,
@@ -177,30 +210,30 @@ def valid() -> dict[str, EventEnvelope]:
     )
     signal = tr.Signal(
         signal_id="sig_001",
-        strategy_id="ema_cross",
+        strategy_id="forex-momentum-strategy",
         strategy_version="1.0.0",
-        instrument_id=fut.instrument_id,
+        instrument_id=ins.instrument_id,
         direction=tr.Direction.LONG,
         strength_bps=6_500,
         as_of_ns=T0 + 60 * SEC,
         expires_at_ns=T0 + 120 * SEC,
         inputs=(
             tr.FeatureRef(
-                feature_name="ema", feature_version="ema_close_n10_v1", as_of_ns=T0 + 60 * SEC
+                feature_name="ema", feature_version="ema_mid_n20_v1", as_of_ns=T0 + 60 * SEC
             ),
         ),
     )
     intent = tr.TradeIntent(
         intent_id="int_001",
         origin=tr.Origin.CORE,
-        source_ref="ema_cross",
+        source_ref="forex-momentum-strategy",
         capital_partition="core",
-        instrument_id=fut.instrument_id,
+        instrument_id=ins.instrument_id,
         side=tr.Side.BUY,
         purpose=tr.Purpose.OPEN,
-        strategy_id="ema_cross",
+        strategy_id="forex-momentum-strategy",
         strategy_version="1.0.0",
-        allowed_accounts=("acc_paper_a", "acc_paper_b"),
+        allowed_accounts=(ACC, "acc_uk_paper_01", "acc_ae_paper_01"),
         signal_ids=("sig_001",),
         as_of_ns=T0 + 60 * SEC,
         expires_at_ns=T0 + 120 * SEC,
@@ -208,55 +241,55 @@ def valid() -> dict[str, EventEnvelope]:
     risk = tr.RiskDecision(
         risk_decision_id="rsk_001",
         intent_id="int_001",
-        account_id="acc_paper_a",
+        account_id=ACC,
         decision=tr.Decision.APPROVED,
         portfolio_state_version=7,
         risk_config_version="risk_v1",
-        max_quantity_units=50,
+        max_quantity_units=100,
         as_of_ns=T0 + 60 * SEC,
     )
     policy = tr.PolicyDecision(
         policy_decision_id="pol_001",
         intent_id="int_001",
-        account_id="acc_paper_a",
+        account_id=ACC,
         decision=tr.Decision.APPROVED,
         policy_version="policy_v1",
         as_of_ns=T0 + 60 * SEC,
     )
-    command_id = derive_id("cmd", "order.command", {"intent": "int_001", "account": "acc_paper_a"})
+    command_id = derive_id("cmd", "order.command", {"intent": "int_001", "account": ACC})
     command = tr.ApprovedOrderCommand(
         command_id=command_id,
         client_order_id=derive_id("cli", "client.order", {"command": command_id}),
-        account_id="acc_paper_a",
-        portfolio_id="pf_paper_a",
+        account_id=ACC,
+        portfolio_id="pf_us_paper_01",
         mode=PAPER,
         origin=tr.Origin.CORE,
         capital_partition="core",
         intent_id="int_001",
-        strategy_id="ema_cross",
+        strategy_id="forex-momentum-strategy",
         strategy_version="1.0.0",
-        instrument_id=fut.instrument_id,
+        instrument_id=ins.instrument_id,
         instrument_version=1,
         side=tr.Side.BUY,
         purpose=tr.Purpose.OPEN,
         order_type=tr.OrderType.LIMIT,
         time_in_force=tr.TimeInForce.DAY,
         quantity_units=50,
-        quantity_scale=0,
-        limit_price_units=2_350_500,
-        price_scale=2,
+        quantity_scale=2,
+        limit_price_units=108_255,
+        price_scale=5,
         reservation_id="rsv_001",
         risk_decision_id="rsk_001",
         policy_decision_id="pol_001",
         portfolio_state_version=7,
-        control_fence=(("GLOBAL", 3), ("ACCOUNT:acc_paper_a", 5)),
+        control_fence=(("GLOBAL", 3), (f"ACCOUNT:{ACC}", 5)),
         config_version="cfg_v1",
         as_of_ns=T0 + 60 * SEC,
         expires_at_ns=T0 + 120 * SEC,
     )
     lifecycle = ex.OrderLifecycleEvent(
         order_id="ord_001",
-        account_id="acc_paper_a",
+        account_id=ACC,
         command_id=command_id,
         sequence=5,
         event_type=OrderEventType.BROKER_ACK,
@@ -266,54 +299,52 @@ def valid() -> dict[str, EventEnvelope]:
         at_ns=T0 + 61 * SEC,
     )
     fill = ex.Fill(
-        fill_id=derive_id(
-            "fil", "fill", {"account": "acc_paper_a", "broker": "paper", "execution": "PX-0001"}
-        ),
-        account_id="acc_paper_a",
-        broker="paper",
+        fill_id=derive_id("fil", "fill", {"account": ACC, "broker": FEED, "execution": "PX-0001"}),
+        account_id=ACC,
+        broker=FEED,
         order_id="ord_001",
         broker_order_id="PB-0001",
         broker_execution_id="PX-0001",
-        instrument_id=fut.instrument_id,
+        instrument_id=ins.instrument_id,
         side=tr.Side.BUY,
-        quantity_units=25,
-        quantity_scale=0,
-        price_units=2_350_500,
-        price_scale=2,
-        fees=(MoneyAmount(units=2_000, currency="INR", scale=2),),
+        quantity_units=50,
+        quantity_scale=2,
+        price_units=108_255,
+        price_scale=5,
+        fees=(MoneyAmount(units=350, currency="USD", scale=2),),
         executed_at_ns=T0 + 62 * SEC,
         received_at_ns=T0 + 62 * SEC + 5_000_000,
         mode=PAPER,
     )
     snapshot = ex.PortfolioSnapshot(
-        account_id="acc_paper_a",
-        portfolio_id="pf_paper_a",
+        account_id=ACC,
+        portfolio_id="pf_us_paper_01",
         state_version=8,
         ledger_cutoff_sequence=42,
         as_of_ns=T0 + 62 * SEC,
-        cash=(MoneyAmount(units=999_998_000, currency="INR", scale=2),),
+        cash=(MoneyAmount(units=9_458_375, currency="USD", scale=2),),
         positions=(
             ex.Position(
-                instrument_id=fut.instrument_id,
-                quantity_units=25,
-                quantity_scale=0,
-                average_price_units=2_350_500,
-                price_scale=2,
-                realized_pnl=MoneyAmount(units=0, currency="INR", scale=2),
+                instrument_id=ins.instrument_id,
+                quantity_units=50,
+                quantity_scale=2,
+                average_price_units=108_255,
+                price_scale=5,
+                realized_pnl=MoneyAmount(units=0, currency="USD", scale=2),
             ),
         ),
         reservations=(
             ex.Reservation(
                 reservation_id="rsv_001",
                 command_id=command_id,
-                amount=MoneyAmount(units=5_000_000, currency="INR", scale=2),
+                amount=MoneyAmount(units=1_000_000, currency="USD", scale=2),
                 expires_at_ns=T0 + 120 * SEC,
             ),
         ),
-        mark_source="ins_test_fut_a:TRADE",
+        mark_source="ins_eurusd:MID",
     )
     control_state = ex.ControlStateContract(
-        scope="ACCOUNT:acc_paper_a",
+        scope=f"ACCOUNT:{ACC}",
         version=6,
         mode=PAPER,
         halted=True,
@@ -324,7 +355,7 @@ def valid() -> dict[str, EventEnvelope]:
     control_cmd = ex.ControlCommandContract(
         command_id="ctl_001",
         type=ControlCommandType.HALT_NEW_ORDERS,
-        scope="ACCOUNT:acc_paper_a",
+        scope=f"ACCOUNT:{ACC}",
         expected_version=5,
         actor="reconciler",
         authorization_ref="policy.auto_halt_on_break",
@@ -333,19 +364,24 @@ def valid() -> dict[str, EventEnvelope]:
     )
     brk = ex.ReconciliationBreak(
         break_id="brk_001",
-        account_id="acc_paper_a",
+        account_id=ACC,
         kind=ex.BreakKind.POSITION,
-        instrument_id=fut.instrument_id,
+        instrument_id=ins.instrument_id,
         cutoff_ns=T0 + 69 * SEC,
-        internal_value="25",
-        broker_value="50",
+        internal_value="0.50",
+        broker_value="1.00",
         state=BreakState.SCOPED_HALT,
-        halt_scope="ACCOUNT:acc_paper_a",
+        halt_scope=f"ACCOUNT:{ACC}",
         detected_at_ns=T0 + 70 * SEC,
         updated_at_ns=T0 + 70 * SEC,
     )
     pairs: list[tuple[str, Contract, int]] = [
-        ("reference.instrument", fut, T0),
+        ("reference.instrument", ins, T0),
+        ("reference.entity", entity, T0),
+        ("reference.broker", broker, T0),
+        ("reference.account", account, T0),
+        ("reference.account_group", group, T0),
+        ("market.fx_rate", rate, T0),
         ("market.quote", quote, T0),
         ("market.trade", trade, T0),
         ("market.index", index, T0),
@@ -369,17 +405,58 @@ def valid() -> dict[str, EventEnvelope]:
     return {name: envelope(name, payload, at) for name, payload, at in pairs}
 
 
-# (file stem, base event type, json-pointer-ish edits, expected error substring, finding)
+# (file stem, base event type, field edits (None = remove), expected error substring, finding)
 INVALID: list[tuple[str, str, dict[str, Any], str, str]] = [
     ("intent_long_short_side", "trade.intent", {"side": "LONG"}, "side", "F17"),
     ("intent_unknown_field", "trade.intent", {"decision_action": "LONG"}, "Extra inputs", "F17"),
     ("intent_core_without_signals", "trade.intent", {"signal_ids": []}, "cite the signals", "F17"),
+    ("intent_side_lowercase", "trade.intent", {"side": "buy"}, "side", "F17"),
     (
         "index_marked_tradable",
         "reference.instrument",
-        {"kind": "INDEX", "tradable": True, "underlying_id": None, "expiry_ns": None},
+        {
+            "asset_class": "INDEX",
+            "kind": "INDEX",
+            "base_currency": None,
+            "quote_currency": None,
+            "pip_size_units": None,
+        },
         "INDEX",
         "C05",
+    ),
+    (
+        "fx_pair_wrong_settlement",
+        "reference.instrument",
+        {"settlement_currency": "EUR"},
+        "quote currency",
+        "C04",
+    ),
+    ("fx_pair_missing_quote", "reference.instrument", {"quote_currency": None}, "both", "C04"),
+    (
+        "account_broker_bound_twice",
+        "reference.account",
+        {
+            "bindings": [
+                {"broker_id": FEED, "rank": 1, "broker_account_ref": "A"},
+                {"broker_id": FEED, "rank": 2, "broker_account_ref": "B"},
+            ]
+        },
+        "bound only once",
+        "F07",
+    ),
+    (
+        "account_secondary_without_primary",
+        "reference.account",
+        {"bindings": [{"broker_id": FEED, "rank": 2, "broker_account_ref": "A"}]},
+        "ranked 1..n",
+        "F07",
+    ),
+    (
+        "entity_bad_jurisdiction",
+        "reference.entity",
+        {"jurisdiction": "Dubai"},
+        "jurisdiction",
+        "C04",
     ),
     (
         "quote_without_sides",
@@ -388,9 +465,8 @@ INVALID: list[tuple[str, str, dict[str, Any], str, str]] = [
         "at least one side",
         "F10",
     ),
-    ("quote_float_price", "market.quote", {"bid_units": 2350.1}, "int", "F41"),
-    ("quote_integral_float_price", "market.quote", {"bid_units": 2350010.0}, "int", "F41"),
-    ("intent_side_lowercase", "trade.intent", {"side": "buy"}, "side", "F17"),
+    ("quote_float_price", "market.quote", {"bid_units": 1.0825}, "int", "F41"),
+    ("quote_integral_float_price", "market.quote", {"bid_units": 108250.0}, "int", "F41"),
     ("candle_inverted_interval", "market.candle", {"end_ns": T0 - 1}, "end_ns", "F15"),
     (
         "feature_future_leakage",
@@ -400,7 +476,7 @@ INVALID: list[tuple[str, str, dict[str, Any], str, str]] = [
         "F14",
     ),
     ("feature_value_while_warming", "market.feature", {"warm": False}, "warming up", "F14"),
-    ("command_mode_off", "order.command", {"mode": "OFF"}, "mode OFF", "F06"),
+    ("command_mode_disabled", "order.command", {"mode": "DISABLED"}, "mode DISABLED", "F06"),
     ("command_without_account", "order.command", {"account_id": None}, "account_id", "F19"),
     ("command_without_fence", "order.command", {"control_fence": []}, "control_fence", "F05"),
     (
@@ -437,16 +513,15 @@ def invalid(valid_envs: dict[str, EventEnvelope]) -> dict[str, dict[str, Any]]:
             "expect_error": expect,
             "payload": payload,
         }
-    # Envelope-level tampering: payload changed after hashing.
     tampered = valid_envs["order.fill"].model_dump(mode="json")
-    tampered["payload"]["quantity_units"] = 50
+    tampered["payload"]["quantity_units"] = 100
     out["envelope_tampered_payload"] = {
         "envelope": tampered,
         "finding": "F41",
         "expect_error": "payload_hash",
     }
     wrong_key = valid_envs["order.fill"].model_dump(mode="json")
-    wrong_key["partition_key"] = "acc_paper_b"
+    wrong_key["partition_key"] = "acc_uk_paper_01"
     out["envelope_wrong_partition_key"] = {
         "envelope": wrong_key,
         "finding": "F12",

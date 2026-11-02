@@ -1,0 +1,35 @@
+{
+  "event_id": "evt_756b19157325c8a22677796e2ee1b06c",
+  "event_type": "reference.broker",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "brk_paper",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000000000000000,
+  "recorded_at_ns": 1788000000000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.2.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "5d7979c8db5fae26f6f88618b06e33ae3e1f7dc06c528b8f77b1e953d8d0ea1f",
+  "payload": {
+    "broker_id": "brk_paper",
+    "name": "COREI paper broker",
+    "platform": "PAPER",
+    "jurisdictions": [
+      "US",
+      "GB",
+      "AE"
+    ],
+    "asset_classes": [
+      "FX",
+      "METAL"
+    ],
+    "order_types": [
+      "MARKET",
+      "LIMIT"
+    ],
+    "position_model": "NETTING",
+    "version": 1
+  }
+}

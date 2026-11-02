@@ -3,11 +3,11 @@
   "expect_error": "reason code",
   "finding": "F04",
   "payload": {
-    "account_id": "acc_paper_a",
+    "account_id": "acc_us_paper_01",
     "as_of_ns": 1788000060000000000,
     "decision": "REJECTED",
     "intent_id": "int_001",
-    "max_quantity_units": 50,
+    "max_quantity_units": 100,
     "portfolio_state_version": 7,
     "reason_codes": [],
     "risk_config_version": "risk_v1",

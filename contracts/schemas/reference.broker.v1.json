@@ -1,0 +1,118 @@
+{
+  "$defs": {
+    "AssetClass": {
+      "enum": [
+        "FX",
+        "METAL",
+        "ENERGY",
+        "AGRICULTURE",
+        "INDEX",
+        "EQUITY",
+        "CRYPTO",
+        "RATES"
+      ],
+      "title": "AssetClass",
+      "type": "string"
+    },
+    "BrokerPlatform": {
+      "enum": [
+        "PAPER",
+        "MT5",
+        "IB",
+        "CTRADER",
+        "FIX",
+        "ALPACA",
+        "BINANCE",
+        "CUSTOM"
+      ],
+      "title": "BrokerPlatform",
+      "type": "string"
+    },
+    "OrderTypeCapability": {
+      "enum": [
+        "MARKET",
+        "LIMIT",
+        "STOP",
+        "STOP_LIMIT",
+        "OCO"
+      ],
+      "title": "OrderTypeCapability",
+      "type": "string"
+    },
+    "PositionModel": {
+      "enum": [
+        "NETTING",
+        "HEDGING"
+      ],
+      "title": "PositionModel",
+      "type": "string"
+    }
+  },
+  "$id": "https://corei.local/schemas/reference.broker.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "asset_classes": {
+      "items": {
+        "$ref": "#/$defs/AssetClass"
+      },
+      "minItems": 1,
+      "title": "Asset Classes",
+      "type": "array"
+    },
+    "broker_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Broker Id",
+      "type": "string"
+    },
+    "jurisdictions": {
+      "items": {
+        "pattern": "^[A-Z]{2}(-[A-Z0-9]{1,8})?$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Jurisdictions",
+      "type": "array"
+    },
+    "name": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "order_types": {
+      "items": {
+        "$ref": "#/$defs/OrderTypeCapability"
+      },
+      "minItems": 1,
+      "title": "Order Types",
+      "type": "array"
+    },
+    "platform": {
+      "$ref": "#/$defs/BrokerPlatform"
+    },
+    "position_model": {
+      "$ref": "#/$defs/PositionModel"
+    },
+    "version": {
+      "default": 1,
+      "minimum": 0,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "broker_id",
+    "name",
+    "platform",
+    "jurisdictions",
+    "asset_classes",
+    "order_types",
+    "position_model"
+  ],
+  "title": "BrokerSpec",
+  "type": "object",
+  "x-corei-event-type": "reference.broker",
+  "x-corei-schema-version": 1
+}

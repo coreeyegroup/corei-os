@@ -30,6 +30,7 @@ def fill_envelope(
 ) -> EventEnvelope:
     base = EventEnvelope.model_validate_json(VECTOR.read_text())
     payload = base.payload | {
+        "account_id": "acc_paper_a",
         "broker_execution_id": execution_id,
         "mode": mode.value,
         "fill_id": f"fil_{execution_id.lower().replace('-', '')}",
@@ -80,14 +81,14 @@ def test_redelivery_applies_once_and_emits_one_snapshot(
     assert p.process(env) is Outcome.APPLIED
     assert p.process(env) is Outcome.DUPLICATE
     assert p.process_raw(env.model_dump_json()) is Outcome.DUPLICATE
-    assert position(connect) == 25
+    assert position(connect) == 50
     assert count(connect, "outbox", "event_type = 'portfolio.snapshot'") == 1
 
 
 def test_mode_fence_rejects_and_records(
     connect: Connect, clock: FixedClock, paper_accounts: dict[str, int]
 ) -> None:
-    env = fill_envelope(mode=ExecutionMode.SIMULATION)
+    env = fill_envelope(mode=ExecutionMode.BACKTEST)
     assert processor(connect, clock).process(env) is Outcome.REJECTED
     assert position(connect) == 0
     assert count(connect, "rejected_events", "reason_code = 'MODE_NOT_ALLOWED'") == 1
@@ -108,7 +109,7 @@ def test_crash_inside_handler_leaves_no_trace_and_redelivery_applies(
         processor(connect, clock, {"order.fill": crash_after_write}).process(env)
     assert position(connect) == 0 and count(connect, "inbox") == 0 and count(connect, "outbox") == 0
     assert processor(connect, clock).process(env) is Outcome.APPLIED
-    assert position(connect) == 25
+    assert position(connect) == 50
 
 
 def test_permanent_error_is_recorded_without_partial_effects(
@@ -145,7 +146,7 @@ def test_fill_conflict_is_rejected_for_reconciliation(
     p = processor(connect, clock)
     first = fill_envelope("PX-77")
     assert p.process(first) is Outcome.APPLIED
-    payload = first.payload | {"quantity_units": 50}
+    payload = first.payload | {"quantity_units": 75}
     changed = make_envelope(
         event_type="order.fill",
         payload=Fill.model_validate_json(json.dumps(payload)),
@@ -159,7 +160,7 @@ def test_fill_conflict_is_rejected_for_reconciliation(
     )
     assert p.process(changed) is Outcome.REJECTED
     assert count(connect, "rejected_events", "reason_code = 'FILLCONFLICT'") == 1
-    assert position(connect) == 25
+    assert position(connect) == 50
 
 
 def test_outbox_relay_end_to_end_with_broker_failure_and_duplicate_publish(
@@ -181,7 +182,7 @@ def test_outbox_relay_end_to_end_with_broker_failure_and_duplicate_publish(
     outcomes = []
     bus.drain("ledger", fills_topic, lambda raw: outcomes.append(p.process_raw(raw)))
     assert outcomes == [Outcome.APPLIED, Outcome.DUPLICATE]
-    assert position(connect) == 25
+    assert position(connect) == 50
     with connect() as conn:
         snap = ledger.snapshot(conn, "acc_paper_a", T0)
-    assert snap.positions[0].quantity_units == 25
+    assert snap.positions[0].quantity_units == 50

@@ -18,7 +18,7 @@ def test_settings_require_explicit_endpoints() -> None:
         {"COREI_ENV": "dev", "DATABASE_URL": "postgresql://x", "KAFKA_BOOTSTRAP": "localhost:9092"}
     )
     assert s.kafka_bootstrap == "localhost:9092" and s.topic_prefix() == "corei.dev"
-    assert s.allowed_modes == {ExecutionMode.PAPER, ExecutionMode.SIMULATION}
+    assert s.allowed_modes == {ExecutionMode.PAPER, ExecutionMode.BACKTEST}
     with pytest.raises(SettingsError, match="LIVE"):
         Settings.from_env(
             {"COREI_ENV": "dev", "DATABASE_URL": "x", "COREI_ALLOWED_MODES": "LIVE_SEMI"}
@@ -42,20 +42,19 @@ def test_migrations_are_contiguous_and_shipped_in_package() -> None:
 
 
 def test_tokens_are_hashed_and_roles_enforced() -> None:
-    auth = TokenAuthenticator.from_config(f"ops:operator:{hashlib.sha256(b'secret-1').hexdigest()}")
+    auth = TokenAuthenticator.from_config(
+        f"ops:trading_ops:{hashlib.sha256(b'secret-1').hexdigest()}"
+    )
     assert auth.authenticate("secret-1").name == "ops"
     for bad in (None, "", "secret-2"):
         with pytest.raises(AuthError):
             auth.authenticate(bad)
-    op = Principal("ops", frozenset({Role.OPERATOR}))
-    assert authorize(op, ControlCommandType.HALT_NEW_ORDERS, None) is Role.OPERATOR
-    for cmd in (
-        ControlCommandType.RELEASE_HALT,
-        ControlCommandType.FLATTEN_POSITIONS,
-        ControlCommandType.SET_MODE,
-    ):
+    op = Principal("ops", frozenset({Role.TRADING_OPS}))
+    assert authorize(op, ControlCommandType.HALT_NEW_ORDERS, None) is Role.TRADING_OPS
+    assert authorize(op, ControlCommandType.SET_MODE, ExecutionMode.PAPER) is Role.TRADING_OPS
+    for cmd in (ControlCommandType.RELEASE_HALT, ControlCommandType.FLATTEN_POSITIONS):
         with pytest.raises(AuthError):
             authorize(op, cmd, ExecutionMode.PAPER)
-    risk = Principal("rita", frozenset({Role.RISK_OFFICER}))
+    risk = Principal("rita", frozenset({Role.RISK_ADMIN}))
     with pytest.raises(AuthError, match="LIVE"):
         authorize(risk, ControlCommandType.SET_MODE, ExecutionMode.LIVE_AUTO)

@@ -4,7 +4,10 @@ Tokens are never stored: configuration holds ``sha256(token)`` per principal.
 Each control command type requires a role; LIVE modes are refused outright in
 this build (live activation is a separately authorized delivery, C01).
 
-    COREI_API_PRINCIPALS="alice:operator:<sha256hex>;rita:risk_officer:<sha256hex>"
+    COREI_API_PRINCIPALS="alice:trading_ops:<sha256hex>;rita:risk_admin:<sha256hex>"
+
+Roles follow the trading blueprint (Layer 9): any operator may activate a
+kill switch; only risk-admin may release it or change risk-bearing settings.
 """
 
 from __future__ import annotations
@@ -19,8 +22,8 @@ from corei.domain.control import LIVE_MODES, ControlCommandType, ExecutionMode
 
 class Role(StrEnum):
     VIEWER = "viewer"
-    OPERATOR = "operator"
-    RISK_OFFICER = "risk_officer"
+    TRADING_OPS = "trading_ops"
+    RISK_ADMIN = "risk_admin"
     SYSTEM = "system"  # automated controls, e.g. the reconciler raising a halt
 
 
@@ -76,11 +79,11 @@ class TokenAuthenticator:
 
 
 _REQUIRED: dict[ControlCommandType, frozenset[Role]] = {
-    ControlCommandType.HALT_NEW_ORDERS: frozenset({Role.OPERATOR, Role.RISK_OFFICER, Role.SYSTEM}),
-    ControlCommandType.CANCEL_OPEN_ORDERS: frozenset({Role.OPERATOR, Role.RISK_OFFICER}),
-    ControlCommandType.RELEASE_HALT: frozenset({Role.RISK_OFFICER}),
-    ControlCommandType.FLATTEN_POSITIONS: frozenset({Role.RISK_OFFICER}),
-    ControlCommandType.SET_MODE: frozenset({Role.RISK_OFFICER}),
+    ControlCommandType.HALT_NEW_ORDERS: frozenset({Role.TRADING_OPS, Role.RISK_ADMIN, Role.SYSTEM}),
+    ControlCommandType.CANCEL_OPEN_ORDERS: frozenset({Role.TRADING_OPS, Role.RISK_ADMIN}),
+    ControlCommandType.RELEASE_HALT: frozenset({Role.RISK_ADMIN}),
+    ControlCommandType.FLATTEN_POSITIONS: frozenset({Role.RISK_ADMIN}),
+    ControlCommandType.SET_MODE: frozenset({Role.TRADING_OPS, Role.RISK_ADMIN}),
 }
 
 

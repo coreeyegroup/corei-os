@@ -1,0 +1,37 @@
+{
+  "event_type": "reference.instrument",
+  "expect_error": "quote currency",
+  "finding": "C04",
+  "payload": {
+    "asset_class": "FX",
+    "base_currency": "EUR",
+    "contract_multiplier_units": 100000,
+    "currency_scale": 2,
+    "expiry_ns": null,
+    "instrument_id": "ins_eurusd",
+    "kind": "SPOT",
+    "max_quantity_units": null,
+    "min_quantity_units": 1,
+    "multiplier_scale": 0,
+    "option_right": null,
+    "pip_size_units": 10,
+    "price_scale": 5,
+    "provider_keys": {
+      "brk_paper": "EURUSD"
+    },
+    "quantity_scale": 2,
+    "quantity_step_units": 1,
+    "quote_currency": "USD",
+    "session_calendar": "fx-24x5",
+    "settlement_currency": "EUR",
+    "strike_units": null,
+    "symbol": "EURUSD",
+    "tick_size_units": 1,
+    "tradable": true,
+    "underlying_id": null,
+    "valid_from_ns": 1788000000000000000,
+    "valid_to_ns": null,
+    "venue": "OTC",
+    "version": 1
+  }
+}

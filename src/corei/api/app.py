@@ -81,7 +81,7 @@ def create_app(ctx: AppContext) -> FastAPI:
             {
                 "scope": s.scope,
                 "version": s.version,
-                "mode": s.mode.value,
+                "mode": s.mode.value if s.mode else None,
                 "halted": s.halted,
                 "halt_reason": s.halt_reason,
                 "updated_at_ns": s.updated_at_ns,

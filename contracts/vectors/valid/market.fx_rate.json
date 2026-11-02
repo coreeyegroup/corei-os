@@ -1,0 +1,23 @@
+{
+  "event_id": "evt_b9175608a29e2ea2e9b7f3e1e97cf0bd",
+  "event_type": "market.fx_rate",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "GBPUSD",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000000000000000,
+  "recorded_at_ns": 1788000000000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.2.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "d03345477950e250cc04862c879ec41d32525196d3bced654564c3e8618e3d22",
+  "payload": {
+    "base_currency": "GBP",
+    "quote_currency": "USD",
+    "rate_units": 127500,
+    "rate_scale": 5,
+    "as_of_ns": 1788000000000000000,
+    "source": "brk_paper"
+  }
+}

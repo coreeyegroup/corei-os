@@ -1,22 +1,22 @@
 {
-  "event_id": "evt_190935c99402468104b42cec79825d16",
+  "event_id": "evt_f4001ef3ca2db2ccb31f92935d362d7b",
   "event_type": "strategy.signal",
   "schema_version": 1,
   "tenant_id": "corei",
-  "partition_key": "ins_test_fut_a",
+  "partition_key": "ins_eurusd",
   "mode": "PAPER",
   "occurred_at_ns": 1788000060000000000,
   "recorded_at_ns": 1788000060000001000,
   "producer": "vector-generator",
-  "producer_version": "0.1.0",
+  "producer_version": "0.2.0",
   "causation_id": null,
   "correlation_id": "cor_slice_001",
-  "payload_hash": "36e9a79827558be5c07f369dcea8a5f46514948ed73ddf1a6cfa54aa458d662b",
+  "payload_hash": "b2c0d6608ed0469bf731b776db811e115dfa31a3de166ecc651c2e0fb3747aff",
   "payload": {
     "signal_id": "sig_001",
-    "strategy_id": "ema_cross",
+    "strategy_id": "forex-momentum-strategy",
     "strategy_version": "1.0.0",
-    "instrument_id": "ins_test_fut_a",
+    "instrument_id": "ins_eurusd",
     "direction": "LONG",
     "strength_bps": 6500,
     "as_of_ns": 1788000060000000000,
@@ -24,7 +24,7 @@
     "inputs": [
       {
         "feature_name": "ema",
-        "feature_version": "ema_close_n10_v1",
+        "feature_version": "ema_mid_n20_v1",
         "as_of_ns": 1788000060000000000
       }
     ]

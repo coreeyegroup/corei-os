@@ -40,7 +40,7 @@ class Settings:
             raise SettingsError(f"invalid COREI_ENV {environment!r}")
         modes = frozenset(
             ExecutionMode(m.strip())
-            for m in e.get("COREI_ALLOWED_MODES", "PAPER,SIMULATION").split(",")
+            for m in e.get("COREI_ALLOWED_MODES", "PAPER,BACKTEST").split(",")
             if m.strip()
         )
         live = {ExecutionMode.LIVE_SEMI, ExecutionMode.LIVE_AUTO} & modes

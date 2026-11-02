@@ -1,0 +1,29 @@
+{
+  "event_id": "evt_781fcf526f27593ace546256deed80d3",
+  "event_type": "reference.account_group",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "grp_forex_swing",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000000000000000,
+  "recorded_at_ns": 1788000000000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.2.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "e308e42c1ef7aca8e43841eb2481e270938d93c20160e5991f1576d82364230b",
+  "payload": {
+    "group_id": "grp_forex_swing",
+    "name": "Forex swing (paper)",
+    "account_ids": [
+      "acc_us_paper_01",
+      "acc_uk_paper_01",
+      "acc_ae_paper_01"
+    ],
+    "strategy_ids": [
+      "forex-momentum-strategy"
+    ],
+    "copy_master_account_id": null,
+    "version": 1
+  }
+}

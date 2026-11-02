@@ -49,10 +49,19 @@ def _attr(name: str) -> Callable[[Any], str]:
     return get
 
 
+def _pair(payload: Any) -> str:
+    return f"{payload.base_currency}{payload.quote_currency}"
+
+
 REGISTRY: dict[str, EventType] = {
     et.name: et
     for et in (
         EventType("reference.instrument", reference.InstrumentSpec, 1, _attr("instrument_id")),
+        EventType("reference.entity", reference.LegalEntity, 1, _attr("entity_id")),
+        EventType("reference.broker", reference.BrokerSpec, 1, _attr("broker_id")),
+        EventType("reference.account", reference.AccountSpec, 1, _attr("account_id")),
+        EventType("reference.account_group", reference.AccountGroup, 1, _attr("group_id")),
+        EventType("market.fx_rate", reference.FxRateSnapshot, 1, _pair),
         EventType("market.quote", market.QuoteObservation, 1, _attr("instrument_id")),
         EventType("market.trade", market.TradeObservation, 1, _attr("instrument_id")),
         EventType("market.index", market.IndexObservation, 1, _attr("instrument_id")),

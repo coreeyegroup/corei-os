@@ -1,0 +1,54 @@
+{
+  "$id": "https://corei.local/schemas/market.fx_rate.v1.json",
+  "additionalProperties": false,
+  "description": "A recorded FX rate: one BASE costs rate QUOTE. Used for valuation, never invented.",
+  "properties": {
+    "as_of_ns": {
+      "exclusiveMaximum": 100000000000000000000,
+      "exclusiveMinimum": 0,
+      "title": "As Of Ns",
+      "type": "integer"
+    },
+    "base_currency": {
+      "pattern": "^[A-Z][A-Z0-9]{2,5}$",
+      "title": "Base Currency",
+      "type": "string"
+    },
+    "quote_currency": {
+      "pattern": "^[A-Z][A-Z0-9]{2,5}$",
+      "title": "Quote Currency",
+      "type": "string"
+    },
+    "rate_scale": {
+      "maximum": 18,
+      "minimum": 0,
+      "title": "Rate Scale",
+      "type": "integer"
+    },
+    "rate_units": {
+      "exclusiveMinimum": 0,
+      "maximum": 1000000000000000000000000000000,
+      "title": "Rate Units",
+      "type": "integer"
+    },
+    "source": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Source",
+      "type": "string"
+    }
+  },
+  "required": [
+    "base_currency",
+    "quote_currency",
+    "rate_units",
+    "rate_scale",
+    "as_of_ns",
+    "source"
+  ],
+  "title": "FxRateSnapshot",
+  "type": "object",
+  "x-corei-event-type": "market.fx_rate",
+  "x-corei-schema-version": 1
+}

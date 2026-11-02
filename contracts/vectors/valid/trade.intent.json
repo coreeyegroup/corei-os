@@ -1,5 +1,5 @@
 {
-  "event_id": "evt_7c45fa73a63edb65c3bad09594e4ca87",
+  "event_id": "evt_102090dda79963d733dc735f11f34fc2",
   "event_type": "trade.intent",
   "schema_version": 1,
   "tenant_id": "corei",
@@ -8,23 +8,24 @@
   "occurred_at_ns": 1788000060000000000,
   "recorded_at_ns": 1788000060000001000,
   "producer": "vector-generator",
-  "producer_version": "0.1.0",
+  "producer_version": "0.2.0",
   "causation_id": null,
   "correlation_id": "cor_slice_001",
-  "payload_hash": "fa07ed1b4903c42c82e4be9d439d823881d25844bbb6464e3075e1ef40d7eaec",
+  "payload_hash": "78314266640b17d0e10249840767cfe3c919353736f50e8b58bbc2447881423d",
   "payload": {
     "intent_id": "int_001",
     "origin": "CORE",
-    "source_ref": "ema_cross",
+    "source_ref": "forex-momentum-strategy",
     "capital_partition": "core",
-    "instrument_id": "ins_test_fut_a",
+    "instrument_id": "ins_eurusd",
     "side": "BUY",
     "purpose": "OPEN",
-    "strategy_id": "ema_cross",
+    "strategy_id": "forex-momentum-strategy",
     "strategy_version": "1.0.0",
     "allowed_accounts": [
-      "acc_paper_a",
-      "acc_paper_b"
+      "acc_us_paper_01",
+      "acc_uk_paper_01",
+      "acc_ae_paper_01"
     ],
     "signal_ids": [
       "sig_001"

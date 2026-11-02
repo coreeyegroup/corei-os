@@ -1,0 +1,71 @@
+{
+  "$id": "https://corei.local/schemas/reference.account_group.v1.json",
+  "additionalProperties": false,
+  "properties": {
+    "account_ids": {
+      "items": {
+        "maxLength": 128,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Account Ids",
+      "type": "array"
+    },
+    "copy_master_account_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Copy Master Account Id"
+    },
+    "group_id": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Group Id",
+      "type": "string"
+    },
+    "name": {
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Name",
+      "type": "string"
+    },
+    "strategy_ids": {
+      "default": [],
+      "items": {
+        "maxLength": 128,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+        "type": "string"
+      },
+      "title": "Strategy Ids",
+      "type": "array"
+    },
+    "version": {
+      "default": 1,
+      "minimum": 0,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "group_id",
+    "name",
+    "account_ids"
+  ],
+  "title": "AccountGroup",
+  "type": "object",
+  "x-corei-event-type": "reference.account_group",
+  "x-corei-schema-version": 1
+}

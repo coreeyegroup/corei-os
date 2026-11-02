@@ -1,40 +1,40 @@
 {
-  "event_id": "evt_66ca480a010e296f28f343817dd3fe78",
+  "event_id": "evt_0adf88f5cded19eb14d27e65fdeff928",
   "event_type": "portfolio.snapshot",
   "schema_version": 1,
   "tenant_id": "corei",
-  "partition_key": "acc_paper_a",
+  "partition_key": "acc_us_paper_01",
   "mode": "PAPER",
   "occurred_at_ns": 1788000062000000000,
   "recorded_at_ns": 1788000062000001000,
   "producer": "vector-generator",
-  "producer_version": "0.1.0",
+  "producer_version": "0.2.0",
   "causation_id": null,
   "correlation_id": "cor_slice_001",
-  "payload_hash": "5f7654ed90aa6850d83b1bcef728c3cacacd414dcae7896d2195209863a37017",
+  "payload_hash": "3ad5911a2ff42af922c6524233c9c4a5f43c05d11a72aa0cad3f01bb2e65d827",
   "payload": {
-    "account_id": "acc_paper_a",
-    "portfolio_id": "pf_paper_a",
+    "account_id": "acc_us_paper_01",
+    "portfolio_id": "pf_us_paper_01",
     "state_version": 8,
     "ledger_cutoff_sequence": 42,
     "as_of_ns": 1788000062000000000,
     "cash": [
       {
-        "units": 999998000,
-        "currency": "INR",
+        "units": 9458375,
+        "currency": "USD",
         "scale": 2
       }
     ],
     "positions": [
       {
-        "instrument_id": "ins_test_fut_a",
-        "quantity_units": 25,
-        "quantity_scale": 0,
-        "average_price_units": 2350500,
-        "price_scale": 2,
+        "instrument_id": "ins_eurusd",
+        "quantity_units": 50,
+        "quantity_scale": 2,
+        "average_price_units": 108255,
+        "price_scale": 5,
         "realized_pnl": {
           "units": 0,
-          "currency": "INR",
+          "currency": "USD",
           "scale": 2
         }
       }
@@ -42,15 +42,15 @@
     "reservations": [
       {
         "reservation_id": "rsv_001",
-        "command_id": "cmd_b2cdd39e134bbd194fc1cc8c5972b9d0",
+        "command_id": "cmd_72edae4b4cd2b91d6b6eb946f4e4c2fd",
         "amount": {
-          "units": 5000000,
-          "currency": "INR",
+          "units": 1000000,
+          "currency": "USD",
           "scale": 2
         },
         "expires_at_ns": 1788000120000000000
       }
     ],
-    "mark_source": "ins_test_fut_a:TRADE"
+    "mark_source": "ins_eurusd:MID"
   }
 }

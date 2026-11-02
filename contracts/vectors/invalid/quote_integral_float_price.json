@@ -3,21 +3,21 @@
   "expect_error": "int",
   "finding": "F41",
   "payload": {
-    "ask_size_units": 50,
-    "ask_units": 2350030,
-    "bid_size_units": 75,
-    "bid_units": 2350010.0,
+    "ask_size_units": 300,
+    "ask_units": 108252,
+    "bid_size_units": 500,
+    "bid_units": 108250.0,
     "feed_session_id": "fs_001",
-    "instrument_id": "ins_test_fut_a",
+    "instrument_id": "ins_eurusd",
     "kind": "QUOTE",
     "observation_id": "obs_q_001",
     "origin": "OBSERVED",
-    "price_scale": 2,
-    "provider": "upstox",
+    "price_scale": 5,
+    "provider": "brk_paper",
     "provider_sequence": 101,
     "provider_ts_ns": 1788000000000000000,
-    "raw_evidence_hash": "f99466a7c7d43a06de087a1f54f77e1b9145a37e5f0ab9e59bddeeda23bb2b91",
+    "raw_evidence_hash": "81367d1c8af53063ff1acf8ead4617f269e225e331f78385304a3780b77c8c36",
     "receive_ts_ns": 1788000000002000000,
-    "size_scale": 0
+    "size_scale": 2
   }
 }

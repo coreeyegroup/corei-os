@@ -1,0 +1,31 @@
+{
+  "event_id": "evt_6bd9615b2e023f8241a20e590a9f6294",
+  "event_type": "reference.account",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "acc_us_paper_01",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000000000000000,
+  "recorded_at_ns": 1788000000000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.2.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "304fc93a68ff8182b429c01ca083241ff933788f8b48f50cfcdf05e79f565e1f",
+  "payload": {
+    "account_id": "acc_us_paper_01",
+    "portfolio_id": "pf_us_paper_01",
+    "entity_id": "ent_us",
+    "ledger_kind": "PAPER",
+    "base_currency": "USD",
+    "bindings": [
+      {
+        "broker_id": "brk_paper",
+        "rank": 1,
+        "broker_account_ref": "PAPER-US-01",
+        "credential_ref": null
+      }
+    ],
+    "version": 1
+  }
+}

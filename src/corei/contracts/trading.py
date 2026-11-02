@@ -179,8 +179,8 @@ class ApprovedOrderCommand(Contract):
 
     @model_validator(mode="after")
     def _checks(self) -> ApprovedOrderCommand:
-        if self.mode is ExecutionMode.OFF:
-            raise ValueError("no order command can exist in mode OFF")
+        if self.mode is ExecutionMode.DISABLED:
+            raise ValueError("no order command can exist in mode DISABLED")
         if (self.order_type is OrderType.LIMIT) != (self.limit_price_units is not None):
             raise ValueError("LIMIT orders need a limit price; MARKET orders must not have one")
         if self.expires_at_ns <= self.as_of_ns:

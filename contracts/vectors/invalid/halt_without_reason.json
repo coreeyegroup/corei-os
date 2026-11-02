@@ -5,7 +5,7 @@
   "payload": {
     "halted": true,
     "mode": "PAPER",
-    "scope": "ACCOUNT:acc_paper_a",
+    "scope": "ACCOUNT:acc_us_paper_01",
     "updated_at_ns": 1788000070000000000,
     "updated_by": "reconciler",
     "version": 6

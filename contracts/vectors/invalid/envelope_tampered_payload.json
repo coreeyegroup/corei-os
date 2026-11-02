@@ -2,38 +2,38 @@
   "envelope": {
     "causation_id": null,
     "correlation_id": "cor_slice_001",
-    "event_id": "evt_4d96760f2fa95fd0aa44b04faa9e8b24",
+    "event_id": "evt_1dc7ab299567b8430199f31f5dd70a1c",
     "event_type": "order.fill",
     "mode": "PAPER",
     "occurred_at_ns": 1788000062000000000,
-    "partition_key": "acc_paper_a",
+    "partition_key": "acc_us_paper_01",
     "payload": {
-      "account_id": "acc_paper_a",
-      "broker": "paper",
+      "account_id": "acc_us_paper_01",
+      "broker": "brk_paper",
       "broker_execution_id": "PX-0001",
       "broker_order_id": "PB-0001",
       "executed_at_ns": 1788000062000000000,
       "fees": [
         {
-          "currency": "INR",
+          "currency": "USD",
           "scale": 2,
-          "units": 2000
+          "units": 350
         }
       ],
-      "fill_id": "fil_664d3cde9a3070ccfa41dfac00a89910",
-      "instrument_id": "ins_test_fut_a",
+      "fill_id": "fil_1d90e4a8b970637fab1d9830cf5fb2c2",
+      "instrument_id": "ins_eurusd",
       "mode": "PAPER",
       "order_id": "ord_001",
-      "price_scale": 2,
-      "price_units": 2350500,
-      "quantity_scale": 0,
-      "quantity_units": 50,
+      "price_scale": 5,
+      "price_units": 108255,
+      "quantity_scale": 2,
+      "quantity_units": 100,
       "received_at_ns": 1788000062005000000,
       "side": "BUY"
     },
-    "payload_hash": "e438c145b7f56ad395e36b7c829ff4c41cb373e3c50c9abb45a5cf3142743343",
+    "payload_hash": "00d161e14ea504c2966ecd0baefe3c003b242d87fca67104ff58d373fa32a5dc",
     "producer": "vector-generator",
-    "producer_version": "0.1.0",
+    "producer_version": "0.2.0",
     "recorded_at_ns": 1788000062000001000,
     "schema_version": 1,
     "tenant_id": "corei"

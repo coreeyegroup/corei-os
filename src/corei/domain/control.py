@@ -1,13 +1,21 @@
-"""Execution modes, scoped halts and fencing (findings F05, F42; corrections C03, C08, C12).
+"""Operation modes, scoped halts and fencing (findings F05, F42; corrections C03, C08, C12).
 
-Control state is owned by one module and changes only through versioned
-commands (optimistic concurrency: ``expected_version`` must match). The
-eligibility check is **fail-closed**: missing control state, an unknown mode or
-a stale version means *no*.
+Operation modes follow the trading blueprint (Layer 9), set per account and
+optionally per (account, strategy):
 
-Halt, cancel-open-orders and flatten are separate commands (C03). Only
-``HALT_NEW_ORDERS`` / ``RELEASE_HALT`` change eligibility here; cancel and
-flatten are requests the OMS executes under their own authorization.
+    DISABLED   strategy/account combination inactive
+    BACKTEST   historical event replay only, never a live connection
+    PAPER      full pipeline, simulated fills, no broker call
+    LIVE_SEMI  human confirmation gate per trade
+    LIVE_AUTO  fully automated
+
+Halts apply at any institutional scope: GLOBAL, ENTITY (a legal entity /
+jurisdiction, e.g. all UK accounts), BROKER, ACCOUNT, STRATEGY, INSTRUMENT,
+or one ACCOUNT_STRATEGY pair. Any operator may halt; only risk-admin may release.
+
+Control state changes only through versioned commands (optimistic concurrency).
+Eligibility is **fail-closed**: missing control state or an unknown mode means no.
+Halt, cancel-open-orders and flatten are separate commands (C03).
 """
 
 from __future__ import annotations
@@ -18,14 +26,15 @@ from enum import StrEnum
 
 
 class ExecutionMode(StrEnum):
-    OFF = "OFF"
-    SIMULATION = "SIMULATION"
+    DISABLED = "DISABLED"
+    BACKTEST = "BACKTEST"
     PAPER = "PAPER"
     LIVE_SEMI = "LIVE_SEMI"
     LIVE_AUTO = "LIVE_AUTO"
 
 
 LIVE_MODES = frozenset({ExecutionMode.LIVE_SEMI, ExecutionMode.LIVE_AUTO})
+TRADING_MODES = frozenset({ExecutionMode.PAPER}) | LIVE_MODES
 
 
 class ControlCommandType(StrEnum):
@@ -36,6 +45,20 @@ class ControlCommandType(StrEnum):
     FLATTEN_POSITIONS = "FLATTEN_POSITIONS"
 
 
+class ScopeKind(StrEnum):
+    GLOBAL = "GLOBAL"
+    ENTITY = "ENTITY"
+    BROKER = "BROKER"
+    ACCOUNT = "ACCOUNT"
+    STRATEGY = "STRATEGY"
+    INSTRUMENT = "INSTRUMENT"
+    ACCOUNT_STRATEGY = "ACCOUNT_STRATEGY"
+
+
+# Scopes whose mode participates in eligibility. Others carry halts only.
+MODE_SCOPES = frozenset({ScopeKind.GLOBAL, ScopeKind.ACCOUNT, ScopeKind.ACCOUNT_STRATEGY})
+
+
 class ControlError(ValueError):
     pass
 
@@ -44,22 +67,29 @@ class StaleVersion(ControlError):
     pass
 
 
-def scope_key(kind: str, ident: str | None = None) -> str:
-    """``GLOBAL`` or ``ACCOUNT:<id>`` / ``STRATEGY:<id>`` / ``INSTRUMENT:<id>``."""
-    if kind == "GLOBAL":
-        if ident is not None:
-            raise ControlError("GLOBAL scope takes no id")
-        return "GLOBAL"
-    if kind not in {"ACCOUNT", "STRATEGY", "INSTRUMENT"} or not ident:
-        raise ControlError(f"invalid scope {kind}:{ident}")
-    return f"{kind}:{ident}"
+def scope_key(kind: ScopeKind | str, *ids: str) -> str:
+    """``GLOBAL``, ``ACCOUNT:<id>``, ``ACCOUNT_STRATEGY:<account>:<strategy>`` ..."""
+    kind = ScopeKind(kind)
+    want = {ScopeKind.GLOBAL: 0, ScopeKind.ACCOUNT_STRATEGY: 2}.get(kind, 1)
+    if len(ids) != want or any(not i or ":" in i for i in ids):
+        raise ControlError(f"scope {kind} needs {want} id(s) without ':', got {ids}")
+    return ":".join((kind.value, *ids))
+
+
+def scope_kind(scope: str) -> ScopeKind:
+    try:
+        kind = ScopeKind(scope.split(":", 1)[0])
+    except ValueError as exc:
+        raise ControlError(f"unknown scope {scope!r}") from exc
+    scope_key(kind, *scope.split(":")[1:])  # validates the shape
+    return kind
 
 
 @dataclass(frozen=True, slots=True)
 class ControlState:
     scope: str
     version: int = 0
-    mode: ExecutionMode = ExecutionMode.OFF
+    mode: ExecutionMode | None = None  # None: not set here (inherit / fail closed)
     halted: bool = False
     halt_reason: str | None = None
     updated_at_ns: int = 0
@@ -82,6 +112,7 @@ def apply_command(state: ControlState, cmd: ControlCommand) -> ControlState:
     """Apply a control command with fencing. Cancel/flatten don't change state here."""
     if cmd.scope != state.scope:
         raise ControlError(f"command scope {cmd.scope} != state scope {state.scope}")
+    kind = scope_kind(cmd.scope)
     if cmd.expected_version != state.version:
         raise StaleVersion(
             f"{state.scope}: expected v{cmd.expected_version}, current v{state.version}"
@@ -93,6 +124,10 @@ def apply_command(state: ControlState, cmd: ControlCommand) -> ControlState:
         case ControlCommandType.SET_MODE:
             if cmd.mode is None:
                 raise ControlError("SET_MODE requires a mode")
+            if kind not in MODE_SCOPES:
+                raise ControlError(
+                    f"modes are set on GLOBAL, ACCOUNT or ACCOUNT_STRATEGY, not {kind}"
+                )
             return replace(base, mode=cmd.mode)
         case ControlCommandType.HALT_NEW_ORDERS:
             if not cmd.reason:
@@ -112,51 +147,83 @@ class Eligibility:
     allowed: bool
     reason: str
     fence: tuple[tuple[str, int], ...] = ()
+    effective_mode: ExecutionMode | None = None
 
 
-def check_new_order(
+@dataclass(frozen=True, slots=True)
+class OrderScope:
+    """Everything an order touches that a halt could apply to."""
+
+    entity_id: str
+    broker_id: str
+    account_id: str
+    strategy_id: str
+    instrument_id: str
+
+
+def effective_mode(
+    states: Mapping[str, ControlState], account_id: str, strategy_id: str
+) -> ExecutionMode | None:
+    """Account mode, overridden by an (account, strategy) mode if one is explicitly set.
+
+    A pair scope that only carries a halt (mode unset) does not override anything.
+    """
+    pair = states.get(scope_key(ScopeKind.ACCOUNT_STRATEGY, account_id, strategy_id))
+    if pair is not None and pair.mode is not None:
+        return pair.mode
+    account = states.get(scope_key(ScopeKind.ACCOUNT, account_id))
+    return None if account is None else account.mode
+
+
+def check_new_order(  # noqa: PLR0911 (one early return per fail-closed reason)
     states: Mapping[str, ControlState],
+    scope: OrderScope,
     *,
-    account_id: str,
-    strategy_id: str,
-    instrument_id: str,
     order_mode: ExecutionMode,
     risk_increasing: bool,
 ) -> Eligibility:
     """Fail-closed eligibility for a new order.
 
-    Returns the versions read (``fence``) so the final dispatch can re-check
-    that none changed between reservation and submission.
+    Returns the control versions read (``fence``) so the final dispatch can
+    re-check that none changed between reservation and submission.
     """
-    scopes = (
-        scope_key("GLOBAL"),
-        scope_key("ACCOUNT", account_id),
-        scope_key("STRATEGY", strategy_id),
-        scope_key("INSTRUMENT", instrument_id),
-    )
     global_state = states.get("GLOBAL")
-    account_state = states.get(scopes[1])
-    if global_state is None or account_state is None:
+    mode = effective_mode(states, scope.account_id, scope.strategy_id)
+    if global_state is None or mode is None or global_state.mode is None:
         return Eligibility(False, "CONTROL_STATE_MISSING")
-    if account_state.mode is ExecutionMode.OFF or global_state.mode is ExecutionMode.OFF:
-        return Eligibility(False, "MODE_OFF")
-    if order_mode is not account_state.mode:
-        return Eligibility(False, "MODE_MISMATCH")
+    if global_state.mode is ExecutionMode.DISABLED or mode is ExecutionMode.DISABLED:
+        return Eligibility(False, "MODE_DISABLED", effective_mode=mode)
+    if order_mode is not mode:
+        return Eligibility(False, "MODE_MISMATCH", effective_mode=mode)
     if order_mode in LIVE_MODES and global_state.mode not in LIVE_MODES:
-        return Eligibility(False, "LIVE_NOT_ENABLED_GLOBALLY")
+        return Eligibility(False, "LIVE_NOT_ENABLED_GLOBALLY", effective_mode=mode)
+    if order_mode is ExecutionMode.BACKTEST:
+        return Eligibility(False, "BACKTEST_NEVER_USES_LIVE_CONTROL", effective_mode=mode)
+
+    scopes = (
+        "GLOBAL",
+        scope_key(ScopeKind.ENTITY, scope.entity_id),
+        scope_key(ScopeKind.BROKER, scope.broker_id),
+        scope_key(ScopeKind.ACCOUNT, scope.account_id),
+        scope_key(ScopeKind.STRATEGY, scope.strategy_id),
+        scope_key(ScopeKind.INSTRUMENT, scope.instrument_id),
+        scope_key(ScopeKind.ACCOUNT_STRATEGY, scope.account_id, scope.strategy_id),
+    )
     fence = []
-    for scope in scopes:
-        st = states.get(scope)
-        if st is None:
-            continue  # strategy/instrument scopes are optional
-        fence.append((scope, st.version))
-        if st.halted and risk_increasing:
-            return Eligibility(False, f"HALTED:{scope}")
-    return Eligibility(True, "OK", tuple(fence))
+    for key in scopes:
+        st = states.get(key)
+        # Absent scopes are fenced at version 0, so a halt created on a new scope
+        # (e.g. the first halt on an entity) still invalidates the fence.
+        fence.append((key, 0 if st is None else st.version))
+        if st is not None and st.halted and risk_increasing:
+            return Eligibility(False, f"HALTED:{key}", effective_mode=mode)
+    return Eligibility(True, "OK", tuple(fence), mode)
 
 
 def fence_still_valid(
     states: Mapping[str, ControlState], fence: tuple[tuple[str, int], ...]
 ) -> bool:
-    """True only if every control scope read at reservation is unchanged."""
-    return all(scope in states and states[scope].version == v for scope, v in fence)
+    """True only if every control scope read at reservation is unchanged (absent = v0)."""
+    if not fence:
+        return False
+    return all((states[s].version if s in states else 0) == v for s, v in fence)

@@ -100,7 +100,7 @@ class PortfolioSnapshot(Contract):
 class ControlStateContract(Contract):
     scope: Ident
     version: Version
-    mode: ExecutionMode
+    mode: ExecutionMode | None  # None: not set at this scope (inherits; GLOBAL/ACCOUNT fail closed)
     halted: bool
     halt_reason: str | None = None
     updated_at_ns: TimestampNs

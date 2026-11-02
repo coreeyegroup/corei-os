@@ -1,6 +1,9 @@
 # COREI OS
 
-Clean rebuild of the COREI trading platform. The legacy repository
+Clean rebuild of the COREI trading platform: an institutional, multi-entity
+international forex platform operated from the **US, UK and Dubai**. It supports
+many brokers (MT5, IB, cTrader, FIX, …), accounts, strategies, instruments and
+currencies. The legacy repository
 (`coreeyegroup/corei` at `a08758dc3`) is preserved read-only as evidence; no
 legacy service directory is copied here.
 
@@ -12,8 +15,9 @@ corrections C01–C13) together with the assessment's findings **F01–F50**.
 | Delivery | Scope | State |
 | --- | --- | --- |
 | A — Baseline and contracts | Source disposition, secret inventory, canonical contracts, units/time/identity rules, CI | Done |
-| **B — Minimal runtime and controls** | Migrations, inbox/outbox processing, Kafka topology, authenticated control API, PAPER mode, durable halts, ledger, reservations | **Done** |
-| C — Data and research foundations | Simulator/replay, observations, candles, per-key features | Next |
+| B — Minimal runtime and controls | Migrations, inbox/outbox processing, Kafka topology, authenticated control API, PAPER mode, durable halts, ledger, reservations | Done |
+| **B.2 — Institutional scope** | Legal entities and jurisdictions, broker registry with ranked bindings, multi-currency ledger and FX valuation, blueprint modes and halt scopes, account groups, DST-aware FX sessions ([ADR 0003](docs/adr/0003-institutional-scope.md)) | **Done** |
+| C — Data and research foundations | Multi-broker FX feeds: simulator/replay, quote observations with quarantine, candles, per-instrument features | Next |
 | D — Complete paper loop | Strategy → intent → risk/policy/sizing/reservation → OMS → paper broker → ledger → reconciliation | — |
 | E–I | Safety qualification, live-data paper, deployment, limited live, expansion | — |
 
@@ -23,13 +27,14 @@ separately authorized step (Delivery H).
 ## Layout
 
 ```
-src/corei/domain/      pure rules: units, time, identity, order/control/reconciliation state machines
+src/corei/domain/      pure rules: units, currencies, FX conversion and sessions, time, identity, state machines
 src/corei/contracts/   canonical event and command contracts (single source of truth)
 src/corei/infra/       settings, Postgres + migrations, inbox/outbox processor, Kafka transport and topology
-src/corei/ledger/      cash, positions, fills (applied once), capital reservations
+src/corei/reference/   legal entities, brokers, accounts and bindings, account groups, instruments, FX rates
+src/corei/ledger/      multi-currency cash, positions, fills (applied once), reservations, valuation
 src/corei/control/     durable modes and scoped halts, token auth and roles
 src/corei/api/         operator API: control commands, state, portfolio, health/readiness
-config/                PAPER bootstrap (two paper accounts)
+config/                PAPER bootstrap: US/UK/Dubai entities, paper broker, FX majors/crosses + XAUUSD
 contracts/schemas/     language-neutral JSON Schemas exported from the contracts (generated)
 contracts/vectors/     valid/invalid example events every producer and consumer must agree on
 docs/findings/         F01–F50 register: status, delivery, gate and the tests that cover each
@@ -44,7 +49,7 @@ tests/                 unit, contract and acceptance tests
 docker compose up -d                       # local Postgres 16 + Kafka (KRaft)
 export COREI_ENV=dev DATABASE_URL=postgresql://corei:corei@localhost:5432/corei KAFKA_BOOTSTRAP=localhost:9092
 uv run python scripts/kafka_topology.py --bootstrap localhost:9092 --env dev --apply
-uv run python -m corei.bootstrap config/paper-bootstrap.yaml   # migrate, PAPER mode, seed 2 accounts
+uv run python -m corei.bootstrap config/paper-bootstrap.yaml   # migrate, PAPER mode, US/UK/AE accounts
 
 # integration tests need a Postgres where the user may create databases
 export COREI_TEST_DATABASE_URL=postgresql://corei:corei@localhost:5432/corei COREI_TEST_KAFKA_BOOTSTRAP=localhost:9092
@@ -69,5 +74,8 @@ uv run python scripts/make_vectors.py   # regenerate contract vectors
    `SUBMISSION_UNKNOWN` and are reconciled before any resend.
 6. **Evidence is executable.** A gate passes only when CI runs a test against
    this commit. Legacy stage reports are history, not evidence.
-7. **No secrets, dependencies or runtime output in Git.** `scripts/repo_hygiene.py`
+7. **Every account belongs to a legal entity; brokers must serve its
+   jurisdiction.** Cash is per currency; FX fills settle in the quote currency;
+   valuation without a recorded rate or mark is INCOMPLETE, never guessed.
+8. **No secrets, dependencies or runtime output in Git.** `scripts/repo_hygiene.py`
    and gitleaks run in CI and pre-commit.

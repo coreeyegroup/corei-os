@@ -1,0 +1,25 @@
+{
+  "event_id": "evt_60323109b622f8dfc48813202f637f23",
+  "event_type": "reference.entity",
+  "schema_version": 1,
+  "tenant_id": "corei",
+  "partition_key": "ent_us",
+  "mode": "PAPER",
+  "occurred_at_ns": 1788000000000000000,
+  "recorded_at_ns": 1788000000000001000,
+  "producer": "vector-generator",
+  "producer_version": "0.2.0",
+  "causation_id": null,
+  "correlation_id": "cor_slice_001",
+  "payload_hash": "812b9a9b509c64e0c154ad40e6e18c63a501767c28ee7d5a8a87391d9bc8302c",
+  "payload": {
+    "entity_id": "ent_us",
+    "name": "COREI US (paper)",
+    "jurisdiction": "US",
+    "regulator": "NFA/CFTC",
+    "base_currency": "USD",
+    "reporting_timezone": "America/New_York",
+    "active": true,
+    "version": 1
+  }
+}

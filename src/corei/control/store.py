@@ -43,7 +43,7 @@ def _row_to_state(row: tuple[Any, ...]) -> ControlState:
     return ControlState(
         scope=str(scope),
         version=int(version),
-        mode=ExecutionMode(str(mode)),
+        mode=None if mode is None else ExecutionMode(str(mode)),
         halted=bool(halted),
         halt_reason=None if reason is None else str(reason),
         updated_at_ns=int(at_ns),
@@ -131,7 +131,7 @@ def execute(
         (
             new.scope,
             new.version,
-            new.mode.value,
+            new.mode.value if new.mode else None,
             new.halted,
             new.halt_reason,
             new.updated_at_ns,

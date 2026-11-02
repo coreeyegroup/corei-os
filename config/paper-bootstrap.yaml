@@ -1,18 +1,79 @@
-# PAPER environment bootstrap: two paper accounts (first vertical slice).
-# seed_cash is a decimal string in the account currency. Change seed_id to add another deposit.
+# PAPER environment bootstrap — international forex, three jurisdictions.
+#
+# Legal entities fix jurisdiction, regulator and base currency. Fill in the regulator
+# and confirm the jurisdiction (e.g. AE onshore vs AE-DIFC) for your real entities.
+# Instrument parameters below are standard FX conventions for the PAPER broker;
+# each real broker's contract specification is loaded as its own instrument version
+# with that broker's symbols in provider_keys.
 mode: PAPER
+
+entities:
+  - entity_id: ent_us
+    name: COREI US (paper)
+    jurisdiction: US
+    base_currency: USD
+    reporting_timezone: America/New_York
+  - entity_id: ent_uk
+    name: COREI UK (paper)
+    jurisdiction: GB
+    base_currency: GBP
+    reporting_timezone: Europe/London
+  - entity_id: ent_ae
+    name: COREI Dubai (paper)
+    jurisdiction: AE
+    base_currency: USD
+    reporting_timezone: Asia/Dubai
+
+brokers:
+  - broker_id: brk_paper
+    name: COREI paper broker
+    platform: PAPER
+    jurisdictions: [US, GB, AE]
+    asset_classes: [FX, METAL, INDEX, ENERGY, EQUITY, CRYPTO]
+    order_types: [MARKET, LIMIT, STOP, STOP_LIMIT, OCO]
+    position_model: NETTING
+  # Real brokers are added the same way once their access is confirmed, e.g.:
+  # - broker_id: brk_mt5_<name>   platform: MT5      position_model: HEDGING
+  # - broker_id: brk_ib           platform: IB       position_model: NETTING
+  # - broker_id: brk_ctrader_<n>  platform: CTRADER  position_model: HEDGING
+
+instruments:
+  # pair, price_scale, pip_size_units (at price scale), quote currency scale
+  - {symbol: EURUSD, base: EUR, quote: USD, price_scale: 5, pip: 10}
+  - {symbol: GBPUSD, base: GBP, quote: USD, price_scale: 5, pip: 10}
+  - {symbol: USDJPY, base: USD, quote: JPY, price_scale: 3, pip: 10}
+  - {symbol: USDCHF, base: USD, quote: CHF, price_scale: 5, pip: 10}
+  - {symbol: AUDUSD, base: AUD, quote: USD, price_scale: 5, pip: 10}
+  - {symbol: USDCAD, base: USD, quote: CAD, price_scale: 5, pip: 10}
+  - {symbol: NZDUSD, base: NZD, quote: USD, price_scale: 5, pip: 10}
+  - {symbol: EURGBP, base: EUR, quote: GBP, price_scale: 5, pip: 10}
+  - {symbol: EURJPY, base: EUR, quote: JPY, price_scale: 3, pip: 10}
+  - {symbol: GBPJPY, base: GBP, quote: JPY, price_scale: 3, pip: 10}
+  - {symbol: XAUUSD, base: XAU, quote: USD, price_scale: 2, pip: null, asset_class: METAL,
+     kind: CFD, multiplier: 100}
+
 accounts:
-  - account_id: acc_paper_a
-    portfolio_id: pf_paper_a
-    broker: paper
-    currency: INR
-    currency_scale: 2
-    seed_cash: "1000000.00"
-    seed_id: 1
-  - account_id: acc_paper_b
-    portfolio_id: pf_paper_b
-    broker: paper
-    currency: INR
-    currency_scale: 2
-    seed_cash: "500000.00"
-    seed_id: 1
+  - account_id: acc_us_paper_01
+    portfolio_id: pf_us_paper_01
+    entity_id: ent_us
+    base_currency: USD
+    bindings: [{broker_id: brk_paper, rank: 1, broker_account_ref: PAPER-US-01}]
+    seed: [{currency: USD, amount: "100000.00"}]
+  - account_id: acc_uk_paper_01
+    portfolio_id: pf_uk_paper_01
+    entity_id: ent_uk
+    base_currency: GBP
+    bindings: [{broker_id: brk_paper, rank: 1, broker_account_ref: PAPER-UK-01}]
+    seed: [{currency: GBP, amount: "80000.00"}]
+  - account_id: acc_ae_paper_01
+    portfolio_id: pf_ae_paper_01
+    entity_id: ent_ae
+    base_currency: USD
+    bindings: [{broker_id: brk_paper, rank: 1, broker_account_ref: PAPER-AE-01}]
+    seed: [{currency: USD, amount: "100000.00"}]
+
+groups:
+  - group_id: grp_forex_swing
+    name: Forex swing (paper)
+    account_ids: [acc_us_paper_01, acc_uk_paper_01, acc_ae_paper_01]
+    strategy_ids: [forex-momentum-strategy]

@@ -15,8 +15,9 @@ from corei.domain.units import Money
 from corei.infra.db import MigrationError, migrate, schema_status
 from corei.ledger import store as ledger
 from corei.ledger.store import FillConflict, FillOutcome, LedgerError, ReservationStatus
+from corei.reference import store as reference
 
-from .conftest import SEC, T0
+from .conftest import PAPER_BROKER, SEC, T0, UK_MT5
 
 pytestmark = pytest.mark.integration
 Connect = Callable[[], psycopg.Connection]
@@ -26,32 +27,36 @@ _exec_counter = iter(range(1, 10**9))
 def fill(
     account: str = "acc_paper_a",
     side: Side = Side.BUY,
-    qty: int = 25,
-    price: int = 2_350_000,
+    qty: int = 100,
+    price: int = 108_250,
     exec_id: str | None = None,
-    fee: int = 2_000,
-    instrument: str = "ins_test_fut_a",
+    fee: int = 700,
+    instrument: str = "ins_eurusd",
+    price_scale: int = 5,
+    broker: str = PAPER_BROKER,
+    mode: ExecutionMode = ExecutionMode.PAPER,
 ) -> Fill:
+    """Default: buy 1.00 lot (qty scale 2) EURUSD at 1.08250 with a $7.00 fee."""
     exec_id = exec_id or f"PX-{next(_exec_counter)}"
     return Fill(
         fill_id=derive_id(
-            "fil", "fill", {"account": account, "broker": "paper", "execution": exec_id}
+            "fil", "fill", {"account": account, "broker": broker, "execution": exec_id}
         ),
         account_id=account,
-        broker="paper",
+        broker=broker,
         order_id="ord_x",
         broker_order_id="PB-1",
         broker_execution_id=exec_id,
         instrument_id=instrument,
         side=side,
         quantity_units=qty,
-        quantity_scale=0,
+        quantity_scale=2,
         price_units=price,
-        price_scale=2,
-        fees=(MoneyAmount(units=fee, currency="INR", scale=2),) if fee else (),
+        price_scale=price_scale,
+        fees=(MoneyAmount(units=fee, currency="USD", scale=2),) if fee else (),
         executed_at_ns=T0 + SEC,
         received_at_ns=T0 + 2 * SEC,
-        mode=ExecutionMode.PAPER,
+        mode=mode,
     )
 
 
@@ -62,7 +67,7 @@ def test_migrations_are_idempotent_and_at_head(connect: Connect) -> None:
     with connect() as conn:
         assert migrate(conn) == []
         applied, expected = schema_status(conn)
-        assert applied == expected >= 1
+        assert applied == expected >= 2
 
 
 def test_modified_migration_is_refused(connect: Connect) -> None:
@@ -82,9 +87,10 @@ def test_journal_and_fills_are_append_only(
         conn.rollback()
         with pytest.raises(psycopg.errors.RaiseException, match="append-only"):
             conn.execute("DELETE FROM ledger_entries")
+        conn.rollback()
 
 
-# ---------------------------------------------------------------- accounts and deposits
+# ---------------------------------------------------------------- deposits
 
 
 def test_seed_deposit_is_idempotent(connect: Connect, paper_accounts: dict[str, int]) -> None:
@@ -93,33 +99,56 @@ def test_seed_deposit_is_idempotent(connect: Connect, paper_accounts: dict[str, 
             conn,
             account_id="acc_paper_a",
             entry_id="seed:acc_paper_a",
-            amount=Money(100_000_000, "INR", 2),
+            amount=Money(10_000_000, "USD", 2),
             at_ns=T0,
         )
         assert again is False
-        assert ledger.cash_balance(conn, "acc_paper_a", "INR") == paper_accounts["acc_paper_a"]
+        assert ledger.cash_balance(conn, "acc_paper_a", "USD") == paper_accounts["acc_paper_a"]
         with pytest.raises(LedgerError):
             ledger.deposit(
                 conn,
                 account_id="acc_paper_a",
                 entry_id="seed:acc_paper_a",
-                amount=Money(1, "INR", 2),
+                amount=Money(1, "USD", 2),
                 at_ns=T0,
             )
 
 
-def test_live_accounts_cannot_be_opened(connect: Connect) -> None:
-    with connect() as conn, pytest.raises(LedgerError, match="mode"):
-        ledger.open_account(
+def test_cash_is_held_per_currency_at_registered_scales(
+    connect: Connect, paper_accounts: dict[str, int]
+) -> None:
+    with connect() as conn, conn.transaction():
+        assert ledger.deposit(
             conn,
-            account_id="acc_live",
-            portfolio_id="pf_live",
-            broker="upstox",
-            mode=ExecutionMode.LIVE_AUTO,
-            currency="INR",
-            currency_scale=2,
+            account_id="acc_paper_a",
+            entry_id="eur-1",
+            amount=Money(500_000, "EUR", 2),
             at_ns=T0,
         )
+        assert ledger.deposit(
+            conn,
+            account_id="acc_paper_a",
+            entry_id="jpy-1",
+            amount=Money(1_000_000, "JPY", 0),
+            at_ns=T0,
+        )
+        assert set(ledger.cash_balances(conn, "acc_paper_a")) == {"USD", "EUR", "JPY"}
+        with pytest.raises(LedgerError, match="scale"):
+            ledger.deposit(
+                conn,
+                account_id="acc_paper_a",
+                entry_id="jpy-2",
+                amount=Money(100, "JPY", 2),
+                at_ns=T0,
+            )
+        with pytest.raises(LedgerError):
+            ledger.deposit(
+                conn,
+                account_id="acc_paper_a",
+                entry_id="xxx-1",
+                amount=Money(100, "QQQ", 2),
+                at_ns=T0,
+            )
 
 
 # ---------------------------------------------------------------- fills
@@ -128,37 +157,39 @@ def test_live_accounts_cannot_be_opened(connect: Connect) -> None:
 def test_duplicate_fill_changes_state_once_f21_f22(
     connect: Connect, paper_accounts: dict[str, int]
 ) -> None:
-    f = fill(qty=50, price=2_350_000, fee=2_000)
+    f = fill(qty=50)  # 0.50 lot x 100,000 EUR x 1.08250 = $54,125.00
     with connect() as conn, conn.transaction():
         assert ledger.apply_fill(conn, f, T0 + 3 * SEC) is FillOutcome.APPLIED
         assert ledger.apply_fill(conn, f, T0 + 4 * SEC) is FillOutcome.DUPLICATE
         snap = ledger.snapshot(conn, "acc_paper_a", T0 + 5 * SEC)
     assert snap.positions[0].quantity_units == 50
-    assert snap.positions[0].average_price_units == 2_350_000
-    # 50 x 23,500.00 = 11,75,000.00 INR = 117,500,000 paise, plus 20.00 fee
-    assert snap.cash[0].units == paper_accounts["acc_paper_a"] - 117_500_000 - 2_000
+    assert snap.positions[0].average_price_units == 108_250
+    assert snap.cash[0].currency == "USD"
+    assert snap.cash[0].units == paper_accounts["acc_paper_a"] - 5_412_500 - 700
 
 
 def test_same_execution_with_different_content_is_a_conflict(
     connect: Connect, paper_accounts: dict[str, int]
 ) -> None:
     with connect() as conn, conn.transaction():
-        ledger.apply_fill(conn, fill(exec_id="PX-dup", qty=25), T0)
+        ledger.apply_fill(conn, fill(exec_id="PX-dup", qty=10), T0)
         with pytest.raises(FillConflict):
-            ledger.apply_fill(conn, fill(exec_id="PX-dup", qty=50), T0)
+            ledger.apply_fill(conn, fill(exec_id="PX-dup", qty=20), T0)
 
 
-def test_accounts_are_isolated_f03(connect: Connect, paper_accounts: dict[str, int]) -> None:
+def test_accounts_are_isolated_across_entities_f03(
+    connect: Connect, paper_accounts: dict[str, int]
+) -> None:
     with connect() as conn, conn.transaction():
-        ledger.apply_fill(conn, fill(account="acc_paper_a", exec_id="PX-same"), T0)
-        # Same broker execution id in another account is a different execution.
+        ledger.apply_fill(conn, fill(account="acc_paper_a", exec_id="PX-same", qty=10), T0)
+        # Same broker execution id in another account (UK entity) is a different execution.
         assert (
-            ledger.apply_fill(conn, fill(account="acc_paper_b", exec_id="PX-same"), T0)
+            ledger.apply_fill(conn, fill(account="acc_paper_b", exec_id="PX-same", qty=10), T0)
             is FillOutcome.APPLIED
         )
         a = ledger.snapshot(conn, "acc_paper_a", T0)
         b = ledger.snapshot(conn, "acc_paper_b", T0)
-    assert a.positions[0].quantity_units == b.positions[0].quantity_units == 25
+    assert a.positions[0].quantity_units == b.positions[0].quantity_units == 10
     assert (
         a.cash[0].units - paper_accounts["acc_paper_a"]
         == b.cash[0].units - paper_accounts["acc_paper_b"]
@@ -168,9 +199,22 @@ def test_accounts_are_isolated_f03(connect: Connect, paper_accounts: dict[str, i
 def test_fill_scales_must_match_reference_data(
     connect: Connect, paper_accounts: dict[str, int]
 ) -> None:
-    bad = fill().model_copy(update={"price_scale": 4})
     with connect() as conn, conn.transaction(), pytest.raises(LedgerError, match="scales"):
-        ledger.apply_fill(conn, bad, T0)
+        ledger.apply_fill(conn, fill(price=10_825, price_scale=4), T0)
+
+
+def test_fill_from_unbound_broker_is_refused(
+    connect: Connect, paper_accounts: dict[str, int]
+) -> None:
+    with connect() as conn, conn.transaction(), pytest.raises(LedgerError, match="not bound"):
+        ledger.apply_fill(conn, fill(broker=UK_MT5), T0)
+
+
+def test_live_fill_cannot_post_to_paper_ledger(
+    connect: Connect, paper_accounts: dict[str, int]
+) -> None:
+    with connect() as conn, conn.transaction(), pytest.raises(LedgerError, match="cannot post"):
+        ledger.apply_fill(conn, fill(mode=ExecutionMode.LIVE_AUTO), T0)
 
 
 @settings(
@@ -179,10 +223,7 @@ def test_fill_scales_must_match_reference_data(
 @given(
     st.lists(
         st.tuples(
-            st.booleans(),
-            st.integers(1, 8),
-            st.integers(2_000_000, 2_500_000),
-            st.integers(0, 5_000),
+            st.booleans(), st.integers(1, 300), st.integers(100_000, 120_000), st.integers(0, 2_000)
         ),
         min_size=1,
         max_size=12,
@@ -193,9 +234,7 @@ def test_property_ledger_conserves_cash(
 ) -> None:
     """cash change == realized P&L - open cost - fees, exactly, after any fill sequence."""
     with connect() as conn:
-        conn.execute("DELETE FROM positions WHERE account_id = 'acc_paper_b'")
-        conn.commit()
-        start = ledger.cash_balance(conn, "acc_paper_b", "INR")
+        start = ledger.cash_balance(conn, "acc_paper_b", "USD")
         fees = 0
         with conn.transaction():
             for buy, lots, price, fee in trades:
@@ -204,21 +243,20 @@ def test_property_ledger_conserves_cash(
                     fill(
                         account="acc_paper_b",
                         side=Side.BUY if buy else Side.SELL,
-                        qty=25 * lots,
-                        price=price - price % 5,
+                        qty=lots,
+                        price=price,
                         fee=fee,
-                        instrument="ins_test_fut_b",
                     ),
                     T0,
                 )
                 fees += fee
             row = conn.execute(
                 "SELECT open_cost_units, realized_pnl_units FROM positions "
-                "WHERE account_id = 'acc_paper_b' AND instrument_id = 'ins_test_fut_b'"
+                "WHERE account_id = 'acc_paper_b' AND instrument_id = 'ins_eurusd'"
             ).fetchone()
             assert row is not None
             open_cost, realized = int(row[0]), int(row[1])
-            delta = ledger.cash_balance(conn, "acc_paper_b", "INR") - start
+            delta = ledger.cash_balance(conn, "acc_paper_b", "USD") - start
             assert delta == realized - open_cost - fees
             raise psycopg.Rollback()  # undo, so every example starts from the same seed
 
@@ -231,11 +269,11 @@ def _reserve(
 ) -> ledger.ReservationResult:
     return ledger.reserve(
         conn,
-        account_id=kw.pop("account", "acc_paper_a"),
-        command_id=command,  # type: ignore[arg-type]
-        amount=Money(amount, "INR", 2),
+        account_id=kw.pop("account", "acc_paper_a"),  # type: ignore[arg-type]
+        command_id=command,
+        amount=Money(amount, "USD", 2),
         mode=kw.pop("mode", ExecutionMode.PAPER),  # type: ignore[arg-type]
-        as_of_ns=kw.pop("as_of", T0),
+        as_of_ns=kw.pop("as_of", T0),  # type: ignore[arg-type]
         expires_at_ns=kw.pop("expires", T0 + 60 * SEC),  # type: ignore[arg-type]
         **kw,  # type: ignore[arg-type]
     )
@@ -274,12 +312,13 @@ def test_reservation_refuses_stale_portfolio_version_and_wrong_mode(
     connect: Connect, paper_accounts: dict[str, int]
 ) -> None:
     with connect() as conn, conn.transaction():
-        version = ledger.get_account(conn, "acc_paper_a").state_version
+        version = reference.get_account(conn, "acc_paper_a").state_version
         assert _reserve(conn, "cmd_v1", 100, expected_state_version=version).ok
         stale = _reserve(conn, "cmd_v2", 100, expected_state_version=version)
         assert not stale.ok and stale.reason == "STALE_PORTFOLIO_STATE"
-        wrong = _reserve(conn, "cmd_m", 100, mode=ExecutionMode.SIMULATION)
-        assert not wrong.ok and wrong.reason == "MODE_MISMATCH"
+        for i, wrong_mode in enumerate((ExecutionMode.BACKTEST, ExecutionMode.LIVE_AUTO)):
+            wrong = _reserve(conn, f"cmd_m{i}", 100, mode=wrong_mode)
+            assert not wrong.ok and wrong.reason == "MODE_MISMATCH"
 
 
 def test_parallel_reservations_never_exceed_capital_f04(
@@ -296,4 +335,4 @@ def test_parallel_reservations_never_exceed_capital_f04(
         results = list(pool.map(attempt, range(40)))
     assert sum(results) == 10
     with connect() as conn:
-        assert ledger.available_cash(conn, "acc_paper_b", "INR") == cash - 10 * chunk
+        assert ledger.available_cash(conn, "acc_paper_b", "USD") == cash - 10 * chunk

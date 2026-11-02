@@ -1,26 +1,26 @@
 {
-  "event_id": "evt_7553ee47ab876b229923c58e78901c4e",
+  "event_id": "evt_ba9bad28cc6c3ba89dbae58a1e49441b",
   "event_type": "risk.decision",
   "schema_version": 1,
   "tenant_id": "corei",
-  "partition_key": "acc_paper_a",
+  "partition_key": "acc_us_paper_01",
   "mode": "PAPER",
   "occurred_at_ns": 1788000060000000000,
   "recorded_at_ns": 1788000060000001000,
   "producer": "vector-generator",
-  "producer_version": "0.1.0",
+  "producer_version": "0.2.0",
   "causation_id": null,
   "correlation_id": "cor_slice_001",
-  "payload_hash": "9ece4578f39ba162325b06410b0e69fc9852f6653af135ac6701e709d3414644",
+  "payload_hash": "db09490a01e1f2815b4aea2d7b37f7fad3986d753fda91b057b36949b8de5325",
   "payload": {
     "risk_decision_id": "rsk_001",
     "intent_id": "int_001",
-    "account_id": "acc_paper_a",
+    "account_id": "acc_us_paper_01",
     "decision": "APPROVED",
     "reason_codes": [],
     "portfolio_state_version": 7,
     "risk_config_version": "risk_v1",
-    "max_quantity_units": 50,
+    "max_quantity_units": 100,
     "as_of_ns": 1788000060000000000
   }
 }

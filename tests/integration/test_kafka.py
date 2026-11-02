@@ -114,4 +114,4 @@ def test_outbox_to_kafka_to_ledger_applies_once(
         row = conn.execute(
             "SELECT quantity_units FROM positions WHERE account_id = 'acc_paper_a'"
         ).fetchone()
-    assert row is not None and int(row[0]) == 25
+    assert row is not None and int(row[0]) == 50

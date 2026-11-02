@@ -1,0 +1,20 @@
+{
+  "event_type": "reference.account",
+  "expect_error": "ranked 1..n",
+  "finding": "F07",
+  "payload": {
+    "account_id": "acc_us_paper_01",
+    "base_currency": "USD",
+    "bindings": [
+      {
+        "broker_account_ref": "A",
+        "broker_id": "brk_paper",
+        "rank": 2
+      }
+    ],
+    "entity_id": "ent_us",
+    "ledger_kind": "PAPER",
+    "portfolio_id": "pf_us_paper_01",
+    "version": 1
+  }
+}

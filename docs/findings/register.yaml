@@ -28,7 +28,13 @@
   gate: R8
   delivery: D
   status: partial
-  tests: [tests/contract/test_vectors.py::test_two_accounts_from_one_intent_get_distinct_command_ids_f03]
+  note: B.2 adds legal-entity jurisdiction checks and DB-enforced account/broker bindings
+  tests:
+    - tests/contract/test_vectors.py::test_two_accounts_from_one_intent_get_distinct_command_ids_f03
+    - tests/integration/test_db_and_ledger.py::test_accounts_are_isolated_across_entities_f03
+    - tests/integration/test_db_and_ledger.py::test_fill_from_unbound_broker_is_refused
+    - tests/integration/test_reference_and_fx.py::test_broker_must_serve_the_entity_jurisdiction
+    - tests/integration/test_reference_and_fx.py::test_fills_table_refuses_unbound_broker_even_bypassing_the_api
 - id: F04
   severity: critical
   title: Risk uses simulated state
@@ -59,7 +65,7 @@
   delivery: D
   status: partial
   tests:
-    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[command_mode_off]"
+    - "tests/contract/test_vectors.py::test_invalid_vector_is_refused[command_mode_disabled]"
     - tests/integration/test_control_and_api.py::test_no_endpoint_accepts_raw_orders_f06
 - id: F07
   severity: high
@@ -191,7 +197,7 @@
   tests:
     - tests/unit/test_positions.py::test_property_money_is_conserved_exactly
     - tests/integration/test_db_and_ledger.py::test_property_ledger_conserves_cash
-    - tests/integration/test_db_and_ledger.py::test_accounts_are_isolated_f03
+    - tests/integration/test_db_and_ledger.py::test_accounts_are_isolated_across_entities_f03
     - tests/integration/test_db_and_ledger.py::test_journal_and_fills_are_append_only
 - id: F23
   severity: high
@@ -289,7 +295,7 @@
   status: covered
   tests:
     - tests/integration/test_control_and_api.py::test_fresh_system_is_fail_closed_and_not_ready
-    - tests/integration/test_control_and_api.py::test_bootstrap_is_idempotent_and_enables_paper
+    - tests/integration/test_control_and_api.py::test_bootstrap_is_idempotent_and_enables_paper_in_every_region
 - id: F37
   severity: medium
   title: Ambiguous source and dependency layout
@@ -387,4 +393,7 @@
   gate: R13
   delivery: I
   status: partial
-  tests: [tests/unit/test_units.py::test_binary_float_is_rejected]
+  note: B.2 refuses copy-trading cycles across account groups; follower sizing is Delivery I
+  tests:
+    - tests/unit/test_units.py::test_binary_float_is_rejected
+    - tests/integration/test_reference_and_fx.py::test_copy_trading_cycles_are_refused

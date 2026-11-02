@@ -3,28 +3,32 @@
   "expect_error": "INDEX",
   "finding": "C05",
   "payload": {
-    "contract_multiplier_units": 1,
+    "asset_class": "INDEX",
+    "contract_multiplier_units": 100000,
     "currency_scale": 2,
-    "instrument_id": "ins_test_fut_a",
+    "expiry_ns": null,
+    "instrument_id": "ins_eurusd",
     "kind": "INDEX",
     "max_quantity_units": null,
-    "min_quantity_units": 25,
+    "min_quantity_units": 1,
     "multiplier_scale": 0,
     "option_right": null,
-    "price_scale": 2,
+    "price_scale": 5,
     "provider_keys": {
-      "upstox": "TEST_FO|00001"
+      "brk_paper": "EURUSD"
     },
-    "quantity_scale": 0,
-    "quantity_step_units": 25,
-    "settlement_currency": "INR",
+    "quantity_scale": 2,
+    "quantity_step_units": 1,
+    "session_calendar": "fx-24x5",
+    "settlement_currency": "USD",
     "strike_units": null,
-    "symbol": "TEST-A-FUT",
-    "tick_size_units": 5,
+    "symbol": "EURUSD",
+    "tick_size_units": 1,
     "tradable": true,
+    "underlying_id": null,
     "valid_from_ns": 1788000000000000000,
     "valid_to_ns": null,
-    "venue": "TESTX",
+    "venue": "OTC",
     "version": 1
   }
 }

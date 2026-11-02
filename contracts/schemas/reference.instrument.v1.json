@@ -1,14 +1,27 @@
 {
   "$defs": {
-    "InstrumentKind": {
+    "AssetClass": {
       "enum": [
+        "FX",
+        "METAL",
+        "ENERGY",
+        "AGRICULTURE",
         "INDEX",
         "EQUITY",
+        "CRYPTO",
+        "RATES"
+      ],
+      "title": "AssetClass",
+      "type": "string"
+    },
+    "InstrumentKind": {
+      "enum": [
+        "SPOT",
+        "CFD",
         "FUTURE",
         "OPTION",
-        "FX_SPOT",
-        "CFD",
-        "COMMODITY"
+        "SHARE",
+        "INDEX"
       ],
       "title": "InstrumentKind",
       "type": "string"
@@ -25,6 +38,22 @@
   "$id": "https://corei.local/schemas/reference.instrument.v1.json",
   "additionalProperties": false,
   "properties": {
+    "asset_class": {
+      "$ref": "#/$defs/AssetClass"
+    },
+    "base_currency": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Z][A-Z0-9]{2,5}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Base Currency"
+    },
     "contract_multiplier_units": {
       "exclusiveMinimum": 0,
       "maximum": 1000000000000000000000000000000,
@@ -98,6 +127,20 @@
       ],
       "default": null
     },
+    "pip_size_units": {
+      "anyOf": [
+        {
+          "exclusiveMinimum": 0,
+          "maximum": 1000000000000000000000000000000,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Pip Size Units"
+    },
     "price_scale": {
       "maximum": 18,
       "minimum": 0,
@@ -124,8 +167,28 @@
       "title": "Quantity Step Units",
       "type": "integer"
     },
+    "quote_currency": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Z][A-Z0-9]{2,5}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Quote Currency"
+    },
+    "session_calendar": {
+      "maxLength": 128,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:\\-]*$",
+      "title": "Session Calendar",
+      "type": "string"
+    },
     "settlement_currency": {
-      "pattern": "^[A-Z]{3}$",
+      "pattern": "^[A-Z][A-Z0-9]{2,5}$",
       "title": "Settlement Currency",
       "type": "string"
     },
@@ -208,9 +271,10 @@
   "required": [
     "instrument_id",
     "version",
+    "asset_class",
+    "kind",
     "venue",
     "symbol",
-    "kind",
     "tradable",
     "price_scale",
     "tick_size_units",
@@ -221,6 +285,7 @@
     "multiplier_scale",
     "settlement_currency",
     "currency_scale",
+    "session_calendar",
     "valid_from_ns"
   ],
   "title": "InstrumentSpec",
