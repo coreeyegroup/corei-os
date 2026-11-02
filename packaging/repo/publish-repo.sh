@@ -11,7 +11,7 @@
 # Signing uses the secret key already imported into GNUPGHOME (APT_SIGNING_KEY in CI).
 set -euo pipefail
 SITE=$1; SUITE=$2; shift 2
-KEEP=${KEEP_VERSIONS:-15}
+KEEP=${KEEP_VERSIONS:-10}
 HERE=$(cd "$(dirname "$0")" && pwd)
 case "$SUITE" in edge|stable) ;; *) echo "suite must be edge or stable"; exit 1;; esac
 KEY_ID=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec/ {print $5; exit}')

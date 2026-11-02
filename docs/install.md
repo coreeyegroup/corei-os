@@ -1,7 +1,7 @@
 # Installing and updating COREI OS on Ubuntu
 
 COREI OS installs and updates like any Ubuntu package, from a signed APT
-repository. Supported: **Ubuntu 24.04 LTS (noble), amd64**.
+repository. Supported: **Ubuntu 22.04 LTS (jammy) and 24.04 LTS (noble), amd64**.
 
 ## Install
 
@@ -17,7 +17,7 @@ The installer:
 
 That one package brings in and wires together:
 
-- **PostgreSQL**, from Ubuntu;
+- **PostgreSQL**, from Ubuntu (version 14 on 22.04, 16 on 24.04);
 - **corei-kafka**, a single-node Kafka on localhost;
 - **corei-os**, the services and the `corei-os` command.
 

@@ -11,11 +11,11 @@ PostgreSQL came from Docker Compose.
 
 ## Decision
 
-1. **Debian packages for Ubuntu 24.04 LTS (amd64).** There are three:
+1. **Debian packages for Ubuntu 22.04 and 24.04 LTS (amd64).** There are three:
    - `corei-os` (application);
    - `corei-kafka` (single-node Kafka);
-   - `corei-os-server` (one-machine meta package depending on PostgreSQL, `corei-kafka` and `corei-os`).
-2. **Self-contained application.** The package carries its own Python environment in `/opt/corei-os/venv`. It is built from `uv.lock` with hash-checked dependencies, on the system Python 3.12, so installed dependencies are exactly the tested ones.
+   - `corei-os-server` (one-machine meta package depending on PostgreSQL 14 or later, `corei-kafka` and `corei-os`). The database setup reads the local cluster's real port instead of assuming 5432.
+2. **Self-contained application.** The package carries its own CPython 3.12 (python-build-standalone, in `/opt/corei-os/python`) and its environment in `/opt/corei-os/venv`, built from `uv.lock` with hash-checked dependencies. Installed dependencies are exactly the tested ones, and the package does not depend on the distribution's Python (22.04 ships 3.10). Amended 3 Nov 2026, after the first install on core-node (Ubuntu 22.04) failed on the Python and PostgreSQL 16 requirements.
 3. **One command, `corei-os`, for everything.** It runs the services, migrations, backups, status, topology, profiles and the auto-update switch. The systemd units, the maintainer scripts and operators all use the same code path.
 4. **systemd services:**
    - `corei-api`, `corei-relay` and `corei-ledger`, grouped by `corei-os.target`;
@@ -30,7 +30,7 @@ PostgreSQL came from Docker Compose.
 
    Indexes are signed with an ed25519 key held only as the `APT_SIGNING_KEY` secret. Release files carry `Origin: COREI OS`, so `unattended-upgrades` can be limited to this repository (`corei-os auto-update on`, off by default).
 9. **Evidence:**
-   - **Every pull request:** builds the packages and runs `packaging/test/install-test.sh` on a fresh Ubuntu 24.04 runner with systemd. It covers install, readiness, an authenticated halt published through the relay to Kafka, and an upgrade that must back up and keep data, configuration and the halt. It also covers the auto-update switch and purge.
+   - **Every pull request:** builds the packages and runs `packaging/test/install-test.sh` on fresh Ubuntu 22.04 and 24.04 runners with systemd. It covers install, readiness, an authenticated halt published through the relay to Kafka, and an upgrade that must back up and keep data, configuration and the halt. It also covers the auto-update switch and purge.
    - **After publishing:** installs from the public repository exactly as a user would.
 
 ## Consequences

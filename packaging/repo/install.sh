@@ -1,5 +1,5 @@
 #!/bin/sh
-# COREI OS installer for Ubuntu 24.04 LTS (noble), amd64.
+# COREI OS installer for Ubuntu 22.04 LTS (jammy) and 24.04 LTS (noble), amd64.
 #
 #   curl -fsSL https://coreeyegroup.github.io/corei-os/install.sh | sudo sh
 #
@@ -17,9 +17,11 @@ PACKAGE=${COREI_PACKAGE:-corei-os-server}
 [ "$(id -u)" -eq 0 ] || { echo "Run as root: curl -fsSL $BASE/install.sh | sudo sh"; exit 1; }
 case "$SUITE" in stable|edge) ;; *) echo "COREI_SUITE must be stable or edge"; exit 1;; esac
 . /etc/os-release
-if [ "${VERSION_CODENAME:-}" != "noble" ]; then
-    echo "WARNING: COREI OS is built and tested for Ubuntu 24.04 (noble); this is ${PRETTY_NAME:-unknown}."
-fi
+case "${ID:-}:${VERSION_CODENAME:-}" in
+    ubuntu:jammy|ubuntu:noble) ;;
+    *) echo "COREI OS supports Ubuntu 22.04 (jammy) and 24.04 (noble); this is ${PRETTY_NAME:-unknown}."
+       [ "${COREI_FORCE:-}" = 1 ] || { echo "Set COREI_FORCE=1 to try anyway."; exit 1; } ;;
+esac
 [ "$(dpkg --print-architecture)" = amd64 ] || { echo "COREI OS packages are amd64 only"; exit 1; }
 
 apt-get update -q

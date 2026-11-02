@@ -388,6 +388,26 @@ def provision_sql(password: str) -> str:
     )
 
 
+def parse_port(text: str) -> int:
+    """The output of ``SHOW port`` from the local cluster, validated."""
+    value = text.strip()
+    if not value.isdigit() or not 0 < int(value) < 65536:
+        raise CliError(f"unexpected PostgreSQL port {value!r}")
+    return int(value)
+
+
+def local_postgres_port() -> int:
+    """Ask the local cluster which TCP port it really listens on (not always 5432)."""
+    out = subprocess.run(
+        ["runuser", "-u", "postgres", "--", "psql", "-X", "-tAc", "SHOW port"],
+        capture_output=True,
+        text=True,
+        check=True,
+        cwd="/",
+    )
+    return parse_port(out.stdout)
+
+
 def cmd_setup_local(args: argparse.Namespace, env: dict[str, str]) -> int:
     _require_root()
     path = Path(env.get("COREI_ENV_FILE", str(DEFAULT_ENV_FILE)))
@@ -404,7 +424,8 @@ def cmd_setup_local(args: argparse.Namespace, env: dict[str, str]) -> int:
             check=True,
             cwd="/",
         )
-        updates["DATABASE_URL"] = f"postgresql://corei:{password}@127.0.0.1:5432/corei"
+        port = local_postgres_port()
+        updates["DATABASE_URL"] = f"postgresql://corei:{password}@127.0.0.1:{port}/corei"
         print("setup-local: created PostgreSQL role and database 'corei'")
     if not current.get("KAFKA_BOOTSTRAP") and args.kafka:
         updates["KAFKA_BOOTSTRAP"] = args.kafka

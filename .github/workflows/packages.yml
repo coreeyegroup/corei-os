@@ -1,6 +1,6 @@
 name: packages
 
-# Build the Ubuntu packages, prove install / upgrade / purge on a real Ubuntu 24.04
+# Build the Ubuntu packages, prove install / upgrade / purge on real Ubuntu 22.04 and 24.04
 # machine with systemd, then publish them to the signed APT repository on GitHub Pages
 # (served from the gh-pages branch):
 #   push to main -> "edge" channel      tag vX.Y.Z -> "stable" channel
@@ -75,14 +75,18 @@ jobs:
 
   install-test:
     needs: build
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           name: debs
-      - name: Install, upgrade and purge on Ubuntu 24.04 with systemd
+      - name: Install, upgrade and purge on ${{ matrix.os }} with systemd
         run: packaging/test/install-test.sh "$PWD/dist" "$PWD/dist-next"
 
   publish:
@@ -155,7 +159,11 @@ jobs:
   verify-published:
     needs: [build, publish]
     if: needs.publish.outputs.published == 'true'
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
     steps:
       - name: Install from the public repository exactly as a user would

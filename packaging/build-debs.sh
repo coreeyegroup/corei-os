@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the COREI OS Debian packages for Ubuntu 24.04 (noble), amd64.
+# Build the COREI OS Debian packages for Ubuntu 22.04 (jammy) and 24.04 (noble), amd64.
 #
 #   sudo packaging/build-debs.sh                   # corei-os + corei-os-server
 #   sudo KAFKA_SHA512=<verified sha512> packaging/build-debs.sh       # + corei-kafka
@@ -20,7 +20,7 @@ WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
 KAFKA_VERSION=${KAFKA_VERSION:-3.8.1}
 KAFKA_DEB_VERSION="${KAFKA_VERSION}-1corei1"
-PYTHON=${PYTHON:-/usr/bin/python3.12}
+PYTHON_VERSION=${PYTHON_VERSION:-3.12}
 APP=/opt/corei-os
 
 [ "$(id -u)" -eq 0 ] || { echo "build-debs: run as root (sudo)"; exit 1; }
@@ -64,7 +64,19 @@ doc() { # $1 = stage, $2 = package
 S="$WORK/corei-os"
 install -d "$S/DEBIAN" "$S/usr/bin" "$S/etc/corei-os/profiles" "$S/lib/systemd/system"
 rm -rf "$APP"
-uv venv --quiet --python "$PYTHON" "$APP/venv"
+# Self-contained CPython (python-build-standalone via uv) inside the package, so the
+# package does not depend on the distribution's Python (Ubuntu 22.04 has 3.10, 24.04 has 3.12).
+UV_PYTHON_INSTALL_DIR="$APP/python" uv python install --quiet "$PYTHON_VERSION"
+PY=$(find "$APP/python" -maxdepth 3 -type f -path '*/bin/python3.[0-9]*' ! -name '*-config' | sort -V | tail -1)
+"$PY" -c 'import sys; assert sys.version_info[:2] >= (3, 12)' || { echo "build-debs: bad bundled Python $PY"; exit 1; }
+[ -x "$PY" ] || { echo "build-debs: bundled Python not found"; exit 1; }
+rm -rf "$APP/python/.lock" "$APP/python/.temp" "$APP/python/.cache"
+# Trim what a headless server never uses (GUI toolkit, IDE, headers, docs) and strip debug symbols.
+PYROOT=$(dirname "$(dirname "$PY")")
+rm -rf "$PYROOT"/lib/python3.*/{idlelib,tkinter,turtledemo,ensurepip,lib2to3,test} \
+       "$PYROOT"/lib/{tcl*,tk*,itcl*} "$PYROOT"/include "$PYROOT"/share
+find "$PYROOT" -name '*.so*' -type f -exec strip --strip-unneeded {} + 2>/dev/null || true
+uv venv --quiet --python "$PY" "$APP/venv"
 uv export --quiet --frozen --no-dev --no-emit-project --format requirements-txt > "$WORK/requirements.txt"
 uv pip install --quiet --python "$APP/venv/bin/python" --require-hashes -r "$WORK/requirements.txt"
 uv build --quiet --wheel --out-dir "$WORK/wheel"

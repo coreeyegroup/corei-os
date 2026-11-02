@@ -24,7 +24,7 @@ corrections C01–C13) together with the assessment's findings **F01–F50**.
 No real orders exist anywhere in this codebase. Real-money execution is a
 separately authorized step (Delivery H).
 
-## Install on Ubuntu 24.04
+## Install on Ubuntu 22.04 or 24.04
 
 ```bash
 curl -fsSL https://coreeyegroup.github.io/corei-os/install.sh | sudo sh   # install

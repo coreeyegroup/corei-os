@@ -105,3 +105,10 @@ def test_version_needs_no_access_to_the_env_file(
     monkeypatch.setattr(cli, "load_environment", lambda _e: (_ for _ in ()).throw(AssertionError))
     assert cli.main(["version"]) == 0
     assert capsys.readouterr().out.strip()
+
+
+def test_postgres_port_is_read_not_assumed() -> None:
+    assert cli.parse_port("5433\n") == 5433
+    for bad in ("", "abc", "0", "70000"):
+        with pytest.raises(cli.CliError):
+            cli.parse_port(bad)

@@ -4,7 +4,7 @@ Section: misc
 Priority: optional
 Architecture: all
 Maintainer: COREI OS <noreply@coreeyegroup.github.io>
-Depends: corei-os (= @VERSION@), corei-kafka (>= @KAFKA_VERSION@), postgresql (>= 16), postgresql-client
+Depends: corei-os (= @VERSION@), corei-kafka (>= @KAFKA_VERSION@), postgresql (>= 14), postgresql-client
 Homepage: https://github.com/coreeyegroup/corei-os
 Description: COREI OS on one machine (PostgreSQL, Kafka and all services)
  Installs and wires together PostgreSQL, a single-node Kafka and COREI OS:
