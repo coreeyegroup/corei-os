@@ -1,9 +1,15 @@
 # COREI OS
 
-Clean rebuild of the COREI trading platform: an institutional, multi-entity
-international forex platform operated from the **US, UK and Dubai**. It supports
-many brokers (MT5, IB, cTrader, FIX, …), accounts, strategies, instruments and
-currencies. The legacy repository
+Clean reconstruction of COREI as an **Institutional Intelligence Operating System**.
+Preserve the legacy platform's full Observe → Discover → Understand → Decide → Act
+→ Monitor → Learn → Improve lifecycle, institutional operations and operational
+terminals while correcting its implementation gaps. Trading is the first domain;
+forex, jurisdictions, brokers and regions are configurable deployment profiles.
+
+**Reconstruction scope:** [COREI Reconstruction Blueprint](docs/COREI_RECONSTRUCTION_BLUEPRINT.md).
+This records the owner's scope clarification and proposed correction/build plan;
+it does not claim that the planned capabilities are implemented. Conflicting
+historical ADR sections require explicit superseding decisions. The legacy repository
 (`coreeyegroup/corei` at `a08758dc3`) is preserved read-only as evidence; no
 legacy service directory is copied here.
 
@@ -17,6 +23,7 @@ corrections C01–C13) together with the assessment's findings **F01–F50**.
 | A — Baseline and contracts | Source disposition, secret inventory, canonical contracts, units/time/identity rules, CI | Done |
 | B — Minimal runtime and controls | Migrations, inbox/outbox processing, Kafka topology, authenticated control API, PAPER mode, durable halts, ledger, reservations | Done |
 | **B.2 — Institutional scope** | Legal entities and jurisdictions, broker registry with ranked bindings, multi-currency ledger and FX valuation, blueprint modes and halt scopes, account groups, DST-aware FX sessions ([ADR 0003](docs/adr/0003-institutional-scope.md)) | **Done** |
+| **B.3 — Foundation corrections** | External accounts, portfolios/allocations, product accounting, tenant isolation and reviewed safety corrections; see the reconstruction blueprint | **Proposed; not implemented** |
 | C — Data and research foundations | Multi-broker FX feeds: simulator/replay, quote observations with quarantine, candles, per-instrument features | Next |
 | D — Complete paper loop | Strategy → intent → risk/policy/sizing/reservation → OMS → paper broker → ledger → reconciliation | — |
 | E–I | Safety qualification, live-data paper, deployment, limited live, expansion | — |
